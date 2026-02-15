@@ -1662,7 +1662,7 @@ function renderPRD() {
       <div class="two-col">
         <div class="field-group">
           <div class="field-label">Target Launch</div>
-          <input class="field-input" id="prdLaunch" placeholder="e.g., End of Q2 2025" oninput="updatePreview()">
+          <input class="field-input" id="prdLaunch" placeholder="e.g., End of Q2 2026" oninput="updatePreview()">
         </div>
         <div class="field-group">
           <div class="field-label">Engineering Owner</div>
@@ -1686,7 +1686,7 @@ function renderRoadmap() {
   <textarea class="doc-title-input" id="docTitle" placeholder="Product area or team roadmap..." rows="1" oninput="autoResize(this);updatePreview()" onkeyup="updatePreview()"></textarea>
   <div class="doc-meta-row">
     <div class="meta-field"><label>Team</label><input id="metaTeam" placeholder="Growth / Platform / Core" oninput="updatePreview()"></div>
-    <div class="meta-field"><label>Year</label><input id="metaYear" placeholder="2025" oninput="updatePreview()"></div>
+    <div class="meta-field"><label>Year</label><input id="metaYear" placeholder="2026" oninput="updatePreview()"></div>
     <div class="meta-field"><label>Author</label><input id="metaAuthor" placeholder="PM name" oninput="updatePreview()"></div>
   </div>
 </div>
@@ -1729,7 +1729,7 @@ function renderRoadmap() {
         ${['Q1','Q2','Q3','Q4'].map((q,i) => `
         <div class="roadmap-item">
           <div class="roadmap-item-fields">
-            <div class="roadmap-quarter-label">${q} · 2025</div>
+            <div class="roadmap-quarter-label">${q} · 2026</div>
             <input class="roadmap-item-input" id="rdm${q}Theme" placeholder="Quarter theme (e.g., Foundation & Stability)" oninput="updatePreview()">
             <input class="roadmap-item-input" style="font-size:12px;color:var(--muted);margin-top:4px;" id="rdm${q}Items" placeholder="Key initiatives: Login redesign, API v2, Onboarding flow..." oninput="updatePreview()">
           </div>
