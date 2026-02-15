@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PM DocStudio — Document Workspace</title>
+<title>PM DocStudio: Document Workspace</title>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;0,9..144,700;1,9..144,400&family=IBM+Plex+Mono:wght@300;400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -1036,6 +1036,38 @@ body::before {
 /* When on Gantt, hide right sidebar and expand editor */
 .gantt-mode .sidebar-right { display: none; }
 .gantt-mode .workspace { grid-template-columns: 280px 1fr; }
+
+/* Gantt inline export bar */
+.gantt-export-bar {
+  display: flex; align-items: center; gap: 10px;
+  padding: 14px 22px; flex-wrap: wrap;
+  border-top: 1.5px solid var(--border);
+  background: var(--surface); flex-shrink: 0;
+}
+.gantt-export-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px; letter-spacing: 0.18em;
+  text-transform: uppercase; color: var(--muted);
+  margin-right: 4px; white-space: nowrap;
+}
+.gantt-xbtn {
+  font-family: 'Outfit', sans-serif;
+  font-size: 12px; font-weight: 600;
+  padding: 8px 16px; border-radius: 8px;
+  cursor: pointer; white-space: nowrap;
+  display: flex; align-items: center; gap: 6px;
+  transition: all 0.16s; border: 1.5px solid transparent;
+}
+.gantt-xbtn.x-primary { background:var(--ink); color:white; border-color:var(--ink); }
+.gantt-xbtn.x-primary:hover { background:var(--ink2); transform:translateY(-1px); }
+.gantt-xbtn.x-pdf { background:var(--rose-bg); color:var(--rose); border-color:#d4a0ac; }
+.gantt-xbtn.x-pdf:hover { background:var(--rose); color:white; transform:translateY(-1px); }
+.gantt-xbtn.x-csv { background:var(--green-bg); color:var(--green); border-color:#7ec8a8; }
+.gantt-xbtn.x-csv:hover { background:var(--green); color:white; transform:translateY(-1px); }
+.gantt-xbtn.x-json { background:#f0fdf4; color:#166534; border-color:#86efac; }
+.gantt-xbtn.x-json:hover { background:#166534; color:white; transform:translateY(-1px); }
+.gantt-xbtn.x-copy { background:var(--amber-bg); color:var(--amber); border-color:#e0b87a; margin-left:auto; }
+.gantt-xbtn.x-copy:hover { background:var(--amber); color:white; transform:translateY(-1px); }
 </style>
 </head>
 <body>
@@ -1254,7 +1286,17 @@ function renderGantt() {
       <span style="display:inline-block;width:10px;height:10px;background:var(--rose);border-radius:50%;opacity:0.5;margin-right:5px"></span>Today marker
     </div>
   </div>
-</div>`;
+</div>
+
+<div class="gantt-export-bar">
+  <span class="gantt-export-label">Export</span>
+  <button class="gantt-xbtn x-pdf"  onclick="exportPDF()"    title="Save as PDF">🖨 PDF</button>
+  <button class="gantt-xbtn x-csv"  onclick="exportCSV()"    title="Download as Excel/CSV">📊 Excel / CSV</button>
+  <button class="gantt-xbtn x-json" onclick="exportJSON()"   title="Download structured JSON">{ } JSON</button>
+  <button class="gantt-xbtn x-primary" onclick="openExportModal()" title="All export options">⬆ All Options</button>
+  <button class="gantt-xbtn x-copy" onclick="copyDocument()" title="Copy to clipboard">📋 Copy</button>
+</div>
+`;
 }
 
 function renderGanttEditorRows() {
