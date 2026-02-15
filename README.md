@@ -1,6 +1,6 @@
 # PM DocStudio
 
-> A fully offline, zero-dependency, single-file HTML workspace for Product Managers — write, preview, and export professional PM documents directly in your browser.
+> A fully offline, zero-dependency, single-file HTML workspace for Product Managers to write, preview, and export professional PM documents directly in your browser.
 
 ![Type](https://img.shields.io/badge/type-Single%20HTML%20File-1e7a5a?style=flat-square)
 ![License](https://img.shields.io/badge/license-MIT-blue?style=flat-square)
