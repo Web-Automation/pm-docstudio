@@ -1,0 +1,3018 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PM DocStudio — Document Workspace</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;0,9..144,700;1,9..144,400&family=IBM+Plex+Mono:wght@300;400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f0ece6;
+  --surface: #f8f5f1;
+  --white: #ffffff;
+  --ink: #18140f;
+  --ink2: #3b3428;
+  --muted: #9c9085;
+  --border: #ddd8d0;
+  --border2: #ccc6bc;
+  --green: #1e7a5a;
+  --green-bg: #eaf4ef;
+  --amber: #b8621a;
+  --amber-bg: #fdf2e8;
+  --slate: #2d4a7a;
+  --slate-bg: #ebeffe;
+  --rose: #a8334c;
+  --rose-bg: #fceef1;
+  --violet: #5a3a8a;
+  --violet-bg: #f2eeff;
+  --shadow-sm: 0 1px 4px rgba(24,20,15,0.07);
+  --shadow-md: 0 4px 20px rgba(24,20,15,0.1);
+  --shadow-lg: 0 12px 40px rgba(24,20,15,0.12);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: 'Outfit', sans-serif;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* SUBTLE DOT GRID */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image: radial-gradient(circle, rgba(24,20,15,0.09) 1px, transparent 1px);
+  background-size: 28px 28px;
+  pointer-events: none; z-index: 0;
+}
+
+/* ── TOP NAV ── */
+.nav {
+  position: sticky; top: 0; z-index: 200;
+  background: rgba(248,245,241,0.92);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+  height: 60px;
+  display: flex;
+  align-items: center;
+  padding: 0 32px;
+  gap: 0;
+}
+
+.nav-logo {
+  font-family: 'Fraunces', serif;
+  font-weight: 700;
+  font-size: 20px;
+  color: var(--ink);
+  letter-spacing: -0.02em;
+  margin-right: 32px;
+  display: flex; align-items: center; gap: 8px;
+}
+.nav-logo-dot {
+  width: 8px; height: 8px;
+  background: var(--green);
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.nav-tabs {
+  display: flex;
+  gap: 2px;
+  flex: 1;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.nav-tabs::-webkit-scrollbar { display: none; }
+
+.nav-tab {
+  display: flex; align-items: center; gap: 7px;
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--muted);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.18s;
+  border: none; background: none;
+}
+.nav-tab:hover { background: var(--border); color: var(--ink2); }
+.nav-tab.active { background: var(--ink); color: white; }
+.nav-tab .tab-icon { font-size: 14px; }
+
+.nav-actions {
+  display: flex; gap: 8px; margin-left: auto;
+}
+
+.btn {
+  font-family: 'Outfit', sans-serif;
+  font-size: 12.5px;
+  font-weight: 600;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  border: none;
+  transition: all 0.18s;
+  display: flex; align-items: center; gap: 6px;
+  white-space: nowrap;
+}
+.btn-ghost { background: transparent; color: var(--muted); border: 1.5px solid var(--border); }
+.btn-ghost:hover { border-color: var(--border2); color: var(--ink2); }
+.btn-primary { background: var(--ink); color: white; }
+.btn-primary:hover { background: var(--ink2); transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+.btn-green { background: var(--green); color: white; }
+.btn-green:hover { opacity: 0.9; transform: translateY(-1px); }
+
+/* ── MAIN LAYOUT ── */
+.workspace {
+  position: relative; z-index: 1;
+  display: grid;
+  grid-template-columns: 300px 1fr 280px;
+  flex: 1;
+  min-height: calc(100vh - 60px);
+}
+
+/* ── LEFT SIDEBAR ── */
+.sidebar-left {
+  border-right: 1px solid var(--border);
+  background: var(--surface);
+  padding: 28px 20px;
+  overflow-y: auto;
+}
+.sidebar-left::-webkit-scrollbar { width: 3px; }
+.sidebar-left::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+.sidebar-section { margin-bottom: 28px; }
+
+.sidebar-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 10px;
+  padding-left: 2px;
+}
+
+/* DOCUMENT TYPE SELECTOR */
+.doc-type-list { display: flex; flex-direction: column; gap: 4px; }
+
+.doc-type-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.16s;
+  border: 1.5px solid transparent;
+}
+.doc-type-item:hover { background: var(--border); }
+.doc-type-item.active { background: var(--white); border-color: var(--border); box-shadow: var(--shadow-sm); }
+
+.doc-type-badge {
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+.badge-green { background: var(--green-bg); }
+.badge-amber { background: var(--amber-bg); }
+.badge-slate { background: var(--slate-bg); }
+.badge-rose { background: var(--rose-bg); }
+.badge-violet { background: var(--violet-bg); }
+
+.doc-type-info { flex: 1; min-width: 0; }
+.doc-type-name { font-size: 13px; font-weight: 600; color: var(--ink2); }
+.doc-type-sub { font-size: 11px; color: var(--muted); margin-top: 1px; }
+.doc-type-item.active .doc-type-name { color: var(--ink); }
+
+/* PROGRESS */
+.progress-wrap { margin-top: 4px; }
+.progress-bar-bg {
+  height: 4px; background: var(--border); border-radius: 2px; margin-top: 12px; overflow: hidden;
+}
+.progress-bar-fill {
+  height: 100%; background: var(--green); border-radius: 2px;
+  transition: width 0.4s ease;
+}
+.progress-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px; color: var(--muted);
+  display: flex; justify-content: space-between;
+  margin-top: 6px;
+}
+
+/* QUICK TIPS */
+.tip-card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px;
+  font-size: 12px;
+  color: var(--ink2);
+  line-height: 1.6;
+}
+.tip-card strong { color: var(--green); font-weight: 600; }
+
+/* ── CENTER EDITOR ── */
+.editor-area {
+  overflow-y: auto;
+  padding: 40px 48px;
+  background: transparent;
+}
+.editor-area::-webkit-scrollbar { width: 4px; }
+.editor-area::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+.doc-header {
+  margin-bottom: 36px;
+  animation: fadeSlide 0.4s ease both;
+}
+
+.doc-type-tag {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  padding: 5px 12px;
+  border-radius: 100px;
+  margin-bottom: 14px;
+}
+
+.doc-title-input {
+  width: 100%;
+  font-family: 'Fraunces', serif;
+  font-size: 38px;
+  font-weight: 700;
+  color: var(--ink);
+  border: none; background: transparent; outline: none;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  resize: none;
+  overflow: hidden;
+  min-height: 50px;
+}
+.doc-title-input::placeholder { color: var(--border2); }
+
+.doc-meta-row {
+  display: flex; flex-wrap: wrap; gap: 16px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.meta-field {
+  display: flex; flex-direction: column; gap: 4px;
+}
+.meta-field label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.meta-field input, .meta-field select {
+  font-family: 'Outfit', sans-serif;
+  font-size: 13px;
+  color: var(--ink2);
+  border: none; background: transparent; outline: none;
+  border-bottom: 1.5px solid var(--border);
+  padding: 3px 0;
+  min-width: 120px;
+  transition: border-color 0.18s;
+}
+.meta-field input:focus, .meta-field select:focus { border-color: var(--green); }
+.meta-field select { appearance: none; cursor: pointer; }
+
+/* SECTIONS */
+.form-sections { display: flex; flex-direction: column; gap: 28px; animation: fadeSlide 0.5s 0.05s ease both; }
+
+.form-section {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow 0.2s;
+}
+.form-section:focus-within { box-shadow: var(--shadow-md); border-color: var(--border2); }
+
+.section-head {
+  display: flex; align-items: center; gap: 12px;
+  padding: 16px 22px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  user-select: none;
+}
+.section-head-icon {
+  width: 30px; height: 30px;
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px;
+  flex-shrink: 0;
+}
+.section-head-text { flex: 1; }
+.section-head-title {
+  font-size: 14px; font-weight: 600; color: var(--ink);
+}
+.section-head-desc { font-size: 11.5px; color: var(--muted); margin-top: 1px; }
+
+.section-required {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  padding: 3px 8px;
+  border-radius: 100px;
+  background: #fff3e8;
+  color: var(--amber);
+  letter-spacing: 0.06em;
+}
+.section-optional {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  padding: 3px 8px;
+  border-radius: 100px;
+  background: var(--border);
+  color: var(--muted);
+  letter-spacing: 0.06em;
+}
+
+.section-toggle {
+  font-size: 12px; color: var(--muted);
+  transition: transform 0.2s;
+}
+.section-body {
+  padding: 22px;
+  display: flex; flex-direction: column; gap: 18px;
+}
+.section-body.collapsed { display: none; }
+
+.field-group { display: flex; flex-direction: column; gap: 7px; }
+
+.field-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  display: flex; align-items: center; gap: 8px;
+}
+.field-label .req { color: var(--rose); }
+
+.field-input, .field-textarea {
+  width: 100%;
+  font-family: 'Outfit', sans-serif;
+  font-size: 14px;
+  color: var(--ink2);
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 14px;
+  outline: none;
+  transition: border-color 0.18s, background 0.18s;
+  line-height: 1.5;
+}
+.field-textarea { resize: vertical; min-height: 90px; }
+.field-input:focus, .field-textarea:focus {
+  border-color: var(--green);
+  background: var(--white);
+}
+.field-input::placeholder, .field-textarea::placeholder { color: var(--border2); }
+
+.field-hint {
+  font-size: 11.5px; color: var(--muted);
+  line-height: 1.5;
+  font-style: italic;
+}
+
+/* TWO-COL */
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+/* STORY ROWS */
+.story-rows { display: flex; flex-direction: column; gap: 10px; }
+.story-row {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr auto 1fr;
+  gap: 8px;
+  align-items: center;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 13px;
+}
+.story-connector {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  color: var(--muted);
+  white-space: nowrap;
+  padding: 0 4px;
+}
+.story-row input {
+  font-family: 'Outfit', sans-serif;
+  font-size: 13px; color: var(--ink2);
+  border: none; background: transparent; outline: none; width: 100%;
+}
+.story-row input::placeholder { color: var(--border2); }
+
+.add-row-btn {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 12.5px; font-weight: 500;
+  color: var(--green);
+  background: none; border: 1.5px dashed var(--green);
+  border-radius: 8px;
+  padding: 8px 14px;
+  cursor: pointer;
+  transition: all 0.16s;
+  font-family: 'Outfit', sans-serif;
+}
+.add-row-btn:hover { background: var(--green-bg); }
+
+.remove-row-btn {
+  background: none; border: none;
+  color: var(--muted); cursor: pointer;
+  font-size: 16px; line-height: 1;
+  padding: 0 4px;
+  transition: color 0.16s;
+}
+.remove-row-btn:hover { color: var(--rose); }
+
+/* PRIORITY TAG */
+.priority-pills { display: flex; gap: 6px; flex-wrap: wrap; }
+.priority-pill {
+  padding: 5px 14px;
+  border-radius: 100px;
+  border: 1.5px solid var(--border);
+  font-size: 12px; font-weight: 500;
+  cursor: pointer;
+  transition: all 0.16s;
+  background: var(--white);
+  color: var(--muted);
+  font-family: 'Outfit', sans-serif;
+}
+.priority-pill:hover { border-color: var(--border2); }
+.priority-pill.sel-p1 { background: var(--rose-bg); border-color: var(--rose); color: var(--rose); }
+.priority-pill.sel-p2 { background: var(--amber-bg); border-color: var(--amber); color: var(--amber); }
+.priority-pill.sel-p3 { background: var(--green-bg); border-color: var(--green); color: var(--green); }
+.priority-pill.sel-p4 { background: var(--border); border-color: var(--border2); color: var(--muted); }
+
+/* SPRINT TABLE */
+.sprint-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.sprint-table th {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  text-align: left;
+  padding: 8px 10px;
+  border-bottom: 1.5px solid var(--border);
+  font-weight: 400;
+}
+.sprint-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+.sprint-table td input, .sprint-table td select {
+  font-family: 'Outfit', sans-serif;
+  font-size: 13px; color: var(--ink2);
+  border: none; background: transparent; outline: none; width: 100%;
+}
+.sprint-table td input::placeholder { color: var(--border2); }
+.sprint-table tr:hover td { background: var(--surface); }
+
+/* STATUS BADGE */
+.status-badge {
+  display: inline-block;
+  padding: 3px 8px; border-radius: 100px;
+  font-size: 11px; font-weight: 500;
+  font-family: 'IBM Plex Mono', monospace;
+}
+.status-todo { background: var(--border); color: var(--muted); }
+.status-inprogress { background: var(--slate-bg); color: var(--slate); }
+.status-done { background: var(--green-bg); color: var(--green); }
+
+/* ── RIGHT PREVIEW ── */
+.sidebar-right {
+  border-left: 1px solid var(--border);
+  background: var(--surface);
+  display: flex; flex-direction: column;
+  overflow: hidden;
+}
+
+.preview-header {
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  flex-shrink: 0;
+}
+.preview-header-title {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.preview-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  font-size: 12px;
+  line-height: 1.7;
+}
+.preview-body::-webkit-scrollbar { width: 3px; }
+.preview-body::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+.preview-doc {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 20px;
+  font-family: 'Outfit', sans-serif;
+  font-size: 12px;
+  color: var(--ink2);
+  line-height: 1.75;
+  min-height: 300px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.preview-title-area {
+  font-family: 'Fraunces', serif;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 12px;
+  line-height: 1.3;
+}
+
+.preview-section { margin-bottom: 14px; }
+.preview-section-title {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+.preview-section-body { font-size: 12px; color: var(--ink2); line-height: 1.65; }
+
+.preview-empty {
+  color: var(--border2);
+  font-style: italic;
+  font-size: 11px;
+}
+
+/* ── EXPORT PANEL ── */
+.export-footer {
+  padding: 14px 14px 16px;
+  border-top: 1px solid var(--border);
+  display: flex; flex-direction: column; gap: 10px;
+  flex-shrink: 0;
+  background: var(--surface);
+}
+.export-section-title {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--muted);
+  display: flex; align-items: center; gap: 6px;
+  margin-bottom: -2px;
+}
+.export-section-title::after { content:''; flex:1; height:1px; background:var(--border); }
+.export-grid {
+  display: grid; gap: 6px;
+}
+.export-grid.g2 { grid-template-columns: 1fr 1fr; }
+.export-grid.g1 { grid-template-columns: 1fr; }
+
+/* Base export button */
+.export-btn {
+  font-family: 'Outfit', sans-serif;
+  font-size: 11.5px; font-weight: 600;
+  padding: 8px 8px;
+  border-radius: 7px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: 5px;
+  transition: all 0.16s ease;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  border: 1.5px solid transparent;
+  line-height: 1;
+}
+.export-btn img.tool-icon {
+  width: 13px; height: 13px; object-fit: contain; border-radius: 2px;
+}
+/* Download types */
+.eb-pdf   { background: var(--rose-bg);   color: var(--rose);   border-color: #d4a0ac; }
+.eb-pdf:hover   { background: var(--rose);   color: white; transform:translateY(-1px); }
+.eb-word  { background: #e8f0fe;           color: #1a56db;       border-color: #93b4f5; }
+.eb-word:hover  { background: #1a56db;         color: white; transform:translateY(-1px); }
+.eb-excel { background: #e8f5e9;           color: #1b5e20;       border-color: #a5d6a7; }
+.eb-excel:hover { background: #1b5e20;         color: white; transform:translateY(-1px); }
+.eb-pptx  { background: #fff3e8;           color: #b8621a;       border-color: #e8b07a; }
+.eb-pptx:hover  { background: #b8621a;         color: white; transform:translateY(-1px); }
+.eb-csv   { background: var(--green-bg);   color: var(--green);  border-color: #7ec8a8; }
+.eb-csv:hover   { background: var(--green);   color: white; transform:translateY(-1px); }
+/* Tool open links */
+.eb-tool  {
+  background: var(--white); color: var(--ink2);
+  border-color: var(--border2);
+  font-weight: 500;
+  font-size: 11px;
+}
+.eb-tool:hover  { border-color: var(--ink2); background: var(--ink); color: white; transform:translateY(-1px); }
+/* Copy always at bottom */
+.eb-copy  { background: var(--ink); color: white; border-color: var(--ink); }
+.eb-copy:hover  { background: var(--ink2); transform:translateY(-1px); }
+
+/* Tool icon badge */
+.tool-badge {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 15px; height: 15px; border-radius: 3px;
+  font-size: 10px; flex-shrink: 0;
+  line-height: 1;
+}
+
+/* Export modal overlay */
+.export-modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(24,20,15,0.45);
+  backdrop-filter: blur(4px);
+  z-index: 5000;
+  display: flex; align-items: center; justify-content: center;
+  animation: fadeIn 0.18s ease;
+}
+@keyframes fadeIn { from { opacity:0 } to { opacity:1 } }
+
+.export-modal {
+  background: var(--white);
+  border-radius: 16px;
+  padding: 28px 28px 24px;
+  width: 480px; max-width: 94vw;
+  box-shadow: 0 20px 60px rgba(24,20,15,0.22);
+  animation: modalSlide 0.22s ease;
+}
+@keyframes modalSlide { from { opacity:0; transform:translateY(16px) } to { opacity:1; transform:translateY(0) } }
+
+.modal-header {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  margin-bottom: 20px;
+}
+.modal-title {
+  font-family: 'Fraunces', serif;
+  font-size: 20px; font-weight: 700;
+  color: var(--ink); line-height: 1.2;
+}
+.modal-subtitle {
+  font-size: 12px; color: var(--muted);
+  margin-top: 3px; font-weight: 400;
+}
+.modal-close {
+  background: var(--border); border: none; border-radius: 6px;
+  width: 28px; height: 28px; cursor: pointer;
+  font-size: 14px; color: var(--muted);
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s; flex-shrink: 0; margin-left: 12px;
+}
+.modal-close:hover { background: var(--border2); color: var(--ink); }
+
+.modal-section-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--muted); margin-bottom: 8px;
+  display: flex; align-items: center; gap: 7px;
+}
+.modal-section-label::after { content:''; flex:1; height:1px; background:var(--border); }
+
+.modal-btn-grid { display: grid; gap: 8px; margin-bottom: 16px; }
+.modal-btn-grid.g2 { grid-template-columns: 1fr 1fr; }
+.modal-btn-grid.g3 { grid-template-columns: 1fr 1fr 1fr; }
+.modal-btn-grid.g1 { grid-template-columns: 1fr; }
+
+.modal-export-btn {
+  display: flex; align-items: center; gap: 10px;
+  padding: 11px 14px;
+  border-radius: 9px;
+  border: 1.5px solid var(--border);
+  background: var(--surface);
+  cursor: pointer;
+  transition: all 0.16s;
+  text-align: left;
+}
+.modal-export-btn:hover {
+  border-color: var(--border2);
+  background: var(--white);
+  box-shadow: 0 2px 10px rgba(24,20,15,0.08);
+  transform: translateY(-1px);
+}
+.modal-export-btn.primary-action {
+  border-color: var(--rose); background: var(--rose-bg);
+}
+.modal-export-btn.primary-action:hover { background: var(--rose); }
+.modal-export-btn.primary-action:hover .meb-name,
+.modal-export-btn.primary-action:hover .meb-desc { color: white; }
+
+.meb-icon {
+  width: 34px; height: 34px;
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; flex-shrink: 0;
+}
+.meb-text { flex: 1; min-width: 0; }
+.meb-name {
+  font-size: 13px; font-weight: 600;
+  color: var(--ink2); line-height: 1.2;
+}
+.meb-desc {
+  font-size: 11px; color: var(--muted);
+  margin-top: 1px; line-height: 1.3;
+}
+.meb-badge {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px; letter-spacing: 0.08em;
+  padding: 2px 7px; border-radius: 100px;
+  background: var(--border); color: var(--muted);
+  flex-shrink: 0;
+}
+.meb-badge.download { background: var(--green-bg); color: var(--green); }
+.meb-badge.open { background: var(--slate-bg); color: var(--slate); }
+.meb-badge.copy { background: var(--amber-bg); color: var(--amber); }
+
+/* ANIMATIONS */
+@keyframes fadeSlide {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.form-sections .form-section:nth-child(1) { animation-delay: 0s; }
+.form-sections .form-section:nth-child(2) { animation-delay: 0.06s; }
+.form-sections .form-section:nth-child(3) { animation-delay: 0.12s; }
+.form-sections .form-section:nth-child(4) { animation-delay: 0.18s; }
+.form-sections .form-section:nth-child(5) { animation-delay: 0.22s; }
+.form-sections .form-section:nth-child(6) { animation-delay: 0.26s; }
+
+/* TOAST */
+.toast {
+  position: fixed;
+  bottom: 24px; right: 24px;
+  background: var(--ink);
+  color: white;
+  padding: 12px 20px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 500;
+  box-shadow: var(--shadow-lg);
+  z-index: 9999;
+  transform: translateY(80px);
+  opacity: 0;
+  transition: all 0.3s ease;
+}
+.toast.show { transform: translateY(0); opacity: 1; }
+
+/* ROADMAP ITEMS */
+.roadmap-item {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  padding: 14px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+  align-items: start;
+  position: relative;
+}
+.roadmap-item-fields { display: flex; flex-direction: column; gap: 8px; }
+.roadmap-quarter-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: 0.08em;
+}
+.roadmap-item-input {
+  font-family: 'Outfit', sans-serif;
+  font-size: 13px; color: var(--ink2);
+  border: none; background: transparent; outline: none; width: 100%;
+}
+.roadmap-item-input::placeholder { color: var(--border2); }
+
+/* CHECKMARK CIRCLE for progress */
+.check-circle {
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  border: 2px solid var(--border2);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: all 0.18s;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.check-circle.checked {
+  background: var(--green);
+  border-color: var(--green);
+  color: white;
+  font-size: 10px;
+}
+
+/* ACCEPTANCE ROW */
+.acceptance-row {
+  display: grid; grid-template-columns: 28px 1fr;
+  gap: 10px; align-items: start;
+}
+.ac-num {
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  background: var(--green-bg);
+  color: var(--green);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  font-weight: 500;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  margin-top: 10px;
+}
+
+/* ── GANTT ── */
+.gantt-teal { --gantt-accent: #0d7a72; --gantt-accent-bg: #e6f4f3; }
+
+.gantt-meta-row {
+  display: flex; flex-wrap: wrap; gap: 16px;
+  padding: 18px 22px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.gantt-canvas-wrap {
+  overflow-x: auto;
+  padding: 24px;
+  background: var(--white);
+}
+.gantt-canvas-wrap::-webkit-scrollbar { height: 5px; }
+.gantt-canvas-wrap::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+.gantt-table {
+  border-collapse: collapse;
+  min-width: 900px;
+  width: 100%;
+}
+
+.gantt-table th {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 400;
+  padding: 6px 10px;
+  border-bottom: 1.5px solid var(--border);
+  white-space: nowrap;
+  text-align: left;
+}
+
+.gantt-week-header {
+  text-align: center !important;
+  font-size: 9px;
+  color: var(--border2);
+  padding: 6px 4px !important;
+  border-left: 1px solid var(--border);
+}
+
+.gantt-row {
+  transition: background 0.15s;
+}
+.gantt-row:hover { background: var(--surface); }
+
+.gantt-cell-task {
+  padding: 10px 12px;
+  min-width: 160px;
+  border-bottom: 1px solid var(--border);
+}
+.gantt-task-name {
+  font-size: 13px; font-weight: 500; color: var(--ink2);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  max-width: 200px;
+}
+.gantt-task-owner {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px; color: var(--muted); margin-top: 2px;
+}
+
+.gantt-cell-meta {
+  padding: 10px 10px;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+.gantt-cell-week {
+  padding: 8px 3px;
+  border-left: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  min-width: 28px;
+  vertical-align: middle;
+}
+
+.gantt-bar {
+  height: 18px;
+  border-radius: 4px;
+  position: relative;
+  min-width: 6px;
+  transition: opacity 0.18s;
+  cursor: pointer;
+}
+.gantt-bar:hover { opacity: 0.85; }
+.gantt-bar-fill {
+  position: absolute; inset: 0;
+  border-radius: 4px;
+  background: currentColor;
+}
+.gantt-bar-progress {
+  position: absolute; top: 0; left: 0; bottom: 0;
+  border-radius: 4px;
+  background: rgba(0,0,0,0.18);
+}
+
+.gantt-today-line {
+  position: relative;
+}
+.gantt-today-line::after {
+  content: '';
+  position: absolute;
+  top: 0; bottom: 0; left: 50%;
+  width: 2px;
+  background: var(--rose);
+  opacity: 0.5;
+  border-radius: 1px;
+}
+
+/* Status chips */
+.gstatus {
+  display: inline-block;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px; letter-spacing: 0.06em;
+  padding: 2px 7px; border-radius: 100px;
+  font-weight: 500; text-transform: uppercase;
+}
+.gstatus-notstarted { background: var(--border); color: var(--muted); }
+.gstatus-inprogress { background: var(--slate-bg); color: var(--slate); }
+.gstatus-done       { background: var(--green-bg); color: var(--green); }
+.gstatus-atrisk     { background: var(--rose-bg); color: var(--rose); }
+.gstatus-blocked    { background: var(--amber-bg); color: var(--amber); }
+
+/* Gantt task editor rows */
+.gantt-editor-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr 1fr 80px auto;
+  gap: 8px;
+  align-items: center;
+  padding: 10px 14px;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  margin-bottom: 8px;
+}
+.gantt-editor-row input,
+.gantt-editor-row select {
+  font-family: 'Outfit', sans-serif;
+  font-size: 12.5px; color: var(--ink2);
+  border: 1.5px solid var(--border);
+  border-radius: 6px;
+  padding: 6px 10px;
+  background: var(--white);
+  outline: none;
+  width: 100%;
+  transition: border-color 0.16s;
+}
+.gantt-editor-row input:focus,
+.gantt-editor-row select:focus { border-color: #0d7a72; }
+.gantt-editor-row input::placeholder { color: var(--border2); }
+
+.gantt-color-dot {
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: inline-block;
+  margin-right: 6px;
+}
+
+.gantt-legend {
+  display: flex; flex-wrap: wrap; gap: 12px;
+  padding: 14px 22px;
+  border-top: 1px solid var(--border);
+  background: var(--surface);
+}
+.gantt-legend-item {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 11.5px; color: var(--muted);
+}
+
+/* Gantt full-width layout override */
+.gantt-workspace {
+  display: flex; flex-direction: column;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.gantt-section-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9.5px; letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 10px;
+  display: flex; align-items: center; gap: 8px;
+}
+.gantt-section-label::after {
+  content: ''; flex: 1; height: 1px; background: var(--border);
+}
+
+/* When on Gantt, hide right sidebar and expand editor */
+.gantt-mode .sidebar-right { display: none; }
+.gantt-mode .workspace { grid-template-columns: 280px 1fr; }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-logo"><span class="nav-logo-dot"></span>PM DocStudio</div>
+  <div class="nav-tabs" id="navTabs">
+    <button class="nav-tab active" data-doc="user-story" onclick="switchDoc('user-story', this)">
+      <span class="tab-icon">📝</span> User Story
+    </button>
+    <button class="nav-tab" data-doc="prd" onclick="switchDoc('prd', this)">
+      <span class="tab-icon">📋</span> PRD
+    </button>
+    <button class="nav-tab" data-doc="roadmap" onclick="switchDoc('roadmap', this)">
+      <span class="tab-icon">🗺️</span> Roadmap
+    </button>
+    <button class="nav-tab" data-doc="sprint" onclick="switchDoc('sprint', this)">
+      <span class="tab-icon">⚡</span> Sprint Plan
+    </button>
+    <button class="nav-tab" data-doc="opp" onclick="switchDoc('opp', this)">
+      <span class="tab-icon">💡</span> Opportunity Brief
+    </button>
+    <button class="nav-tab" data-doc="gantt" onclick="switchDoc('gantt', this)">
+      <span class="tab-icon">📊</span> Gantt Chart
+    </button>
+  </div>
+  <div class="nav-actions">
+    <button class="btn btn-ghost" onclick="clearDoc()">🗑 Clear</button>
+    <button class="btn btn-primary" onclick="copyDocument()">📋 Copy Doc</button>
+  </div>
+</nav>
+
+<!-- WORKSPACE -->
+<div class="workspace">
+
+  <!-- LEFT SIDEBAR -->
+  <aside class="sidebar-left">
+    <div class="sidebar-section">
+      <div class="sidebar-label">Document Type</div>
+      <div class="doc-type-list">
+        <div class="doc-type-item active" onclick="switchDoc('user-story', null, this)">
+          <div class="doc-type-badge badge-green">📝</div>
+          <div class="doc-type-info">
+            <div class="doc-type-name">User Story</div>
+            <div class="doc-type-sub">As a user, I want...</div>
+          </div>
+        </div>
+        <div class="doc-type-item" onclick="switchDoc('prd', null, this)">
+          <div class="doc-type-badge badge-slate">📋</div>
+          <div class="doc-type-info">
+            <div class="doc-type-name">PRD</div>
+            <div class="doc-type-sub">Product Requirements</div>
+          </div>
+        </div>
+        <div class="doc-type-item" onclick="switchDoc('roadmap', null, this)">
+          <div class="doc-type-badge badge-amber">🗺️</div>
+          <div class="doc-type-info">
+            <div class="doc-type-name">Roadmap</div>
+            <div class="doc-type-sub">Quarterly planning</div>
+          </div>
+        </div>
+        <div class="doc-type-item" onclick="switchDoc('sprint', null, this)">
+          <div class="doc-type-badge badge-rose">⚡</div>
+          <div class="doc-type-info">
+            <div class="doc-type-name">Sprint Plan</div>
+            <div class="doc-type-sub">2-week cycle plan</div>
+          </div>
+        </div>
+        <div class="doc-type-item" onclick="switchDoc('opp', null, this)">
+          <div class="doc-type-badge badge-violet">💡</div>
+          <div class="doc-type-info">
+            <div class="doc-type-name">Opportunity Brief</div>
+            <div class="doc-type-sub">Problem → opportunity</div>
+          </div>
+        </div>
+        <div class="doc-type-item" onclick="switchDoc('gantt', null, this)">
+          <div class="doc-type-badge" style="background:#e6f4f3;">📊</div>
+          <div class="doc-type-info">
+            <div class="doc-type-name">Gantt Chart</div>
+            <div class="doc-type-sub">Timeline & milestones</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Completion</div>
+      <div class="progress-wrap">
+        <div class="progress-label">
+          <span id="progressLabel">0 of 0 fields filled</span>
+          <span id="progressPct">0%</span>
+        </div>
+        <div class="progress-bar-bg">
+          <div class="progress-bar-fill" id="progressFill" style="width:0%"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">💡 PM Tip</div>
+      <div class="tip-card" id="tipCard">
+        <strong>User Stories</strong> should be small enough to complete in one sprint. If it's too large, split it into multiple stories with the same goal.
+      </div>
+    </div>
+  </aside>
+
+  <!-- EDITOR -->
+  <main class="editor-area" id="editorArea">
+    <!-- dynamically rendered -->
+  </main>
+
+  <!-- RIGHT PREVIEW -->
+  <aside class="sidebar-right">
+    <div class="preview-header">
+      <span class="preview-header-title">📄 Live Preview</span>
+      <span style="font-size:11px;color:var(--muted);font-family:'IBM Plex Mono',monospace;">auto-updates</span>
+    </div>
+    <div class="preview-body">
+      <div class="preview-doc" id="previewDoc">
+        <div class="preview-empty">Start filling in the form to see your document take shape...</div>
+      </div>
+    </div>
+    <div class="export-footer">
+      <div class="export-section-title">Export</div>
+      <button class="export-btn eb-pdf" style="width:100%" onclick="openExportModal()">
+        ⬆ Export Document
+      </button>
+      <button class="export-btn eb-copy" style="width:100%" onclick="copyDocument()">
+        📋 Copy to Clipboard
+      </button>
+    </div>
+  </aside>
+
+  <!-- EXPORT MODAL (injected by JS) -->
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ─── STATE ───────────────────────────────────────────────────
+let currentDoc = 'user-story';
+let storyRows = [{ who: '', want: '', so: '' }];
+let acceptanceRows = [''];
+let roadmapItems = [
+  { quarter: 'Q1', theme: '', items: '', status: 'planned' },
+  { quarter: 'Q2', theme: '', items: '', status: 'planned' },
+  { quarter: 'Q3', theme: '', items: '', status: 'planned' },
+  { quarter: 'Q4', theme: '', items: '', status: 'planned' },
+];
+let sprintRows = [{ task: '', owner: '', points: '', status: 'todo' }];
+
+const tips = {
+  'user-story': '📝 <strong>User Stories</strong> should be small enough to complete in one sprint. If it\'s too large, split it into multiple stories with the same goal.',
+  'prd': '📋 <strong>PRDs</strong> should answer WHY before WHAT. A strong problem statement prevents scope creep better than any process.',
+  'roadmap': '🗺️ A good <strong>Roadmap</strong> communicates intent, not a promise. Always pair each item with the user problem it solves.',
+  'sprint': '⚡ <strong>Sprint Goals</strong> should be outcome-based ("reduce drop-off"), not output-based ("ship X feature"). Goals create focus.',
+  'opp': '💡 An <strong>Opportunity Brief</strong> should be shareable in a Slack message. If it takes 10 mins to explain, the thinking isn\'t clear enough yet.',
+  'gantt': '📊 <strong>Gantt Charts</strong> communicate sequence and dependencies, not just dates. Always show who owns each bar — ownership without deadlines is just a wish list.',
+};
+
+// ─── GANTT STATE ─────────────────────────────────────────────
+let ganttTasks = [
+  { id:1, name:'Discovery & Research',  owner:'PM',       start:1,  dur:2, status:'done',       color:'#1e7a5a', pct:100 },
+  { id:2, name:'Design & Wireframes',   owner:'Designer', start:3,  dur:3, status:'inprogress', color:'#2d4a7a', pct:60  },
+  { id:3, name:'Frontend Development',  owner:'Dev Team', start:5,  dur:4, status:'notstarted', color:'#0d7a72', pct:0   },
+  { id:4, name:'Backend / API',         owner:'Backend',  start:5,  dur:3, status:'notstarted', color:'#5a3a8a', pct:0   },
+  { id:5, name:'QA & Testing',          owner:'QA',       start:9,  dur:2, status:'notstarted', color:'#b8621a', pct:0   },
+  { id:6, name:'Launch & Monitoring',   owner:'PM',       start:11, dur:2, status:'notstarted', color:'#a8334c', pct:0   },
+];
+let ganttWeeks = 12;
+let ganttTodayWeek = 3;
+const COLORS = ['#1e7a5a','#2d4a7a','#0d7a72','#5a3a8a','#b8621a','#a8334c','#c49a3c','#3a5ae0'];
+
+function renderGantt() {
+  return `
+<div class="doc-header" style="margin-bottom:24px">
+  <div class="doc-type-tag" style="background:#e6f4f3;color:#0d7a72;">📊 GANTT CHART</div>
+  <textarea class="doc-title-input" id="docTitle" placeholder="Project or feature name..." rows="1"
+    oninput="autoResize(this);renderGanttChart()" onkeyup="renderGanttChart()"></textarea>
+  <div class="doc-meta-row">
+    <div class="meta-field"><label>Start Date</label><input id="ganttStartDate" type="date" oninput="renderGanttChart()"></div>
+    <div class="meta-field"><label>Weeks</label>
+      <select id="ganttWeeks" oninput="ganttWeeks=parseInt(this.value);renderGanttChart()">
+        ${[4,6,8,10,12,16,20,24].map(w=>`<option value="${w}" ${w===12?'selected':''}>${w} weeks</option>`).join('')}
+      </select>
+    </div>
+    <div class="meta-field"><label>Today = Week</label>
+      <input id="ganttToday" type="number" min="1" value="${ganttTodayWeek}" style="max-width:70px"
+        oninput="ganttTodayWeek=parseInt(this.value)||1;renderGanttChart()">
+    </div>
+    <div class="meta-field"><label>Team / Author</label><input id="ganttAuthor" placeholder="Your name" oninput="renderGanttChart()"></div>
+  </div>
+</div>
+
+<div class="gantt-workspace form-section" style="margin-bottom:28px">
+  <div style="padding:18px 22px;border-bottom:1px solid var(--border)">
+    <div class="gantt-section-label">Tasks</div>
+    <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr 80px auto;gap:6px;margin-bottom:8px;padding:0 2px">
+      ${['Task Name','Owner','Start Wk','Duration','Status','% Done',''].map(h=>`<div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted)">${h}</div>`).join('')}
+    </div>
+    <div id="ganttEditorRows"></div>
+    <button class="add-row-btn" onclick="addGanttTask()" style="margin-top:6px">+ Add Task</button>
+  </div>
+  <div class="gantt-canvas-wrap">
+    <div id="ganttChartInner"></div>
+  </div>
+  <div class="gantt-legend">
+    <div class="gantt-legend-item"><span class="gstatus gstatus-notstarted">not started</span></div>
+    <div class="gantt-legend-item"><span class="gstatus gstatus-inprogress">in progress</span></div>
+    <div class="gantt-legend-item"><span class="gstatus gstatus-done">done</span></div>
+    <div class="gantt-legend-item"><span class="gstatus gstatus-atrisk">at risk</span></div>
+    <div class="gantt-legend-item"><span class="gstatus gstatus-blocked">blocked</span></div>
+    <div class="gantt-legend-item" style="margin-left:auto">
+      <span style="display:inline-block;width:10px;height:10px;background:var(--rose);border-radius:50%;opacity:0.5;margin-right:5px"></span>Today marker
+    </div>
+  </div>
+</div>`;
+}
+
+function renderGanttEditorRows() {
+  const container = document.getElementById('ganttEditorRows');
+  if (!container) return;
+  container.innerHTML = ganttTasks.map((t, i) => `
+    <div class="gantt-editor-row">
+      <input value="${t.name}" placeholder="Task name..." oninput="ganttTasks[${i}].name=this.value;renderGanttChart()">
+      <input value="${t.owner}" placeholder="Owner" oninput="ganttTasks[${i}].owner=this.value;renderGanttChart()">
+      <input type="number" min="1" max="${ganttWeeks}" value="${t.start}" oninput="ganttTasks[${i}].start=Math.max(1,parseInt(this.value)||1);renderGanttChart()">
+      <input type="number" min="1" max="${ganttWeeks}" value="${t.dur}" oninput="ganttTasks[${i}].dur=Math.max(1,parseInt(this.value)||1);renderGanttChart()">
+      <select oninput="ganttTasks[${i}].status=this.value;renderGanttChart()">
+        ${['notstarted','inprogress','done','atrisk','blocked'].map(s=>`<option value="${s}" ${t.status===s?'selected':''}>${s}</option>`).join('')}
+      </select>
+      <input type="number" min="0" max="100" value="${t.pct}" oninput="ganttTasks[${i}].pct=Math.min(100,Math.max(0,parseInt(this.value)||0));renderGanttChart()">
+      <div style="display:flex;align-items:center;gap:6px">
+        <div style="width:14px;height:14px;border-radius:50%;background:${t.color};flex-shrink:0;cursor:pointer;border:2px solid rgba(0,0,0,0.1)"
+          title="Click to change color" onclick="cycleColor(${i})"></div>
+        ${ganttTasks.length > 1 ? `<button class="remove-row-btn" onclick="removeGanttTask(${i})">×</button>` : ''}
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderGanttChart() {
+  const inner = document.getElementById('ganttChartInner');
+  if (!inner) return;
+  const weeks = ganttWeeks;
+  const today = ganttTodayWeek;
+
+  let headerCells = `<th class="gantt-cell-task">Task</th><th class="gantt-cell-meta" style="min-width:80px">Owner</th><th class="gantt-cell-meta" style="min-width:72px">Status</th><th class="gantt-cell-meta" style="min-width:56px">Done</th>`;
+  for (let w = 1; w <= weeks; w++) {
+    const isToday = w === today;
+    headerCells += `<th class="gantt-week-header${isToday?' gantt-today-line':''}" title="Week ${w}">W${w}</th>`;
+  }
+
+  const statusLabels = { notstarted:'Not Started', inprogress:'In Progress', done:'Done', atrisk:'At Risk', blocked:'Blocked' };
+
+  let rows = ganttTasks.map(t => {
+    const statusClass = `gstatus gstatus-${t.status}`;
+    const label = statusLabels[t.status] || t.status;
+    let weekCells = '';
+    for (let w = 1; w <= weeks; w++) {
+      const inTask = (w >= t.start && w < t.start + t.dur);
+      const isStart = w === t.start;
+      const isEnd = w === t.start + t.dur - 1;
+      const isToday = w === today;
+      const tdClass = `gantt-cell-week${isToday?' gantt-today-line':''}`;
+      const tdStyle = isToday ? 'background:rgba(168,51,76,0.03)' : '';
+      if (inTask) {
+        const br = isStart && isEnd ? '4px' : (isStart ? '4px 0 0 4px' : (isEnd ? '0 4px 4px 0' : '0'));
+        weekCells += `<td class="${tdClass}" style="${tdStyle}">
+          <div style="position:relative;height:18px;border-radius:${br};background:${t.color}22">
+            <div style="position:absolute;top:0;left:0;bottom:0;width:${t.pct}%;background:${t.color};border-radius:${br};opacity:0.75;transition:width 0.3s"></div>
+          </div></td>`;
+      } else {
+        weekCells += `<td class="${tdClass}" style="${tdStyle}"></td>`;
+      }
+    }
+    return `<tr class="gantt-row">
+      <td class="gantt-cell-task">
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="width:3px;height:34px;border-radius:2px;background:${t.color};flex-shrink:0"></div>
+          <div><div class="gantt-task-name">${t.name||'Unnamed Task'}</div><div class="gantt-task-owner">${t.owner||''}</div></div>
+        </div>
+      </td>
+      <td class="gantt-cell-meta" style="font-size:12px;color:var(--muted)">${t.owner||'—'}</td>
+      <td class="gantt-cell-meta"><span class="${statusClass}">${label}</span></td>
+      <td class="gantt-cell-meta">
+        <div style="display:flex;align-items:center;gap:5px">
+          <div style="width:36px;height:5px;background:var(--border);border-radius:3px;overflow:hidden">
+            <div style="height:100%;width:${t.pct}%;background:${t.color};border-radius:3px;transition:width 0.3s"></div>
+          </div>
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--muted)">${t.pct}%</span>
+        </div>
+      </td>${weekCells}
+    </tr>`;
+  }).join('');
+
+  inner.innerHTML = `<table class="gantt-table"><thead><tr>${headerCells}</tr></thead><tbody>${rows}</tbody></table>`;
+  renderGanttEditorRows();
+}
+
+function addGanttTask() {
+  const last = ganttTasks[ganttTasks.length - 1];
+  ganttTasks.push({ id: Date.now(), name: '', owner: '', start: last ? Math.min(last.start + last.dur, ganttWeeks) : 1, dur: 2, status: 'notstarted', color: COLORS[ganttTasks.length % COLORS.length], pct: 0 });
+  renderGanttChart();
+}
+
+function removeGanttTask(i) {
+  ganttTasks.splice(i, 1);
+  renderGanttChart();
+}
+
+function cycleColor(i) {
+  const cur = COLORS.indexOf(ganttTasks[i].color);
+  ganttTasks[i].color = COLORS[(cur + 1) % COLORS.length];
+  renderGanttChart();
+}
+
+// ─── DOC TEMPLATES ───────────────────────────────────────────
+function renderUserStory() {
+  return `
+<div class="doc-header">
+  <div class="doc-type-tag" style="background:var(--green-bg);color:var(--green);">
+    📝 USER STORY
+  </div>
+  <textarea class="doc-title-input" id="docTitle" placeholder="Feature or story name..." rows="1" oninput="autoResize(this);updatePreview()" onkeyup="updatePreview()"></textarea>
+  <div class="doc-meta-row">
+    <div class="meta-field"><label>Author</label><input id="metaAuthor" placeholder="Your name" oninput="updatePreview()"></div>
+    <div class="meta-field"><label>Epic</label><input id="metaEpic" placeholder="Parent epic" oninput="updatePreview()"></div>
+    <div class="meta-field"><label>Sprint</label><input id="metaSprint" placeholder="Sprint 12" oninput="updatePreview()"></div>
+    <div class="meta-field"><label>Priority</label>
+      <div class="priority-pills" id="priorityPills">
+        <div class="priority-pill" onclick="setPriority('P1',this)">🔴 P1</div>
+        <div class="priority-pill" onclick="setPriority('P2',this)">🟠 P2</div>
+        <div class="priority-pill sel-p3" onclick="setPriority('P3',this)">🟢 P3</div>
+        <div class="priority-pill" onclick="setPriority('P4',this)">⚪ P4</div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="form-sections">
+
+  <div class="form-section">
+    <div class="section-head" onclick="toggleSection(this)">
+      <div class="section-head-icon badge-green">👤</div>
+      <div class="section-head-text">
+        <div class="section-head-title">User Stories</div>
+        <div class="section-head-desc">As a [who], I want [what], so that [why]</div>
+      </div>
+      <span class="section-required">Required</span>
+      <span class="section-toggle">▾</span>
+    </div>
+    <div class="section-body" id="sb-stories">
+      <div class="story-rows" id="storyRows"></div>
+      <button class="add-row-btn" onclick="addStoryRow()">+ Add Story</button>
+    </div>
+  </div>
+
+  <div class="form-section">
+    <div class="section-head" onclick="toggleSection(this)">
+      <div class="section-head-icon badge-green">✅</div>
+      <div class="section-head-text">
+        <div class="section-head-title">Acceptance Criteria</div>
+        <div class="section-head-desc">Given/When/Then — definition of done</div>
+      </div>
+      <span class="section-required">Required</span>
+      <span class="section-toggle">▾</span>
+    </div>
+    <div class="section-body" id="sb-acceptance">
+      <div id="acceptanceRows"></div>
+      <button class="add-row-btn" onclick="addAcceptanceRow()">+ Add Criterion</button>
+    </div>
+  </div>
+
+  <div class="form-section">
+    <div class="section-head" onclick="toggleSection(this)">
+      <div class="section-head-icon badge-green">🎯</div>
+      <div class="section-head-text">
+        <div class="section-head-title">Background & Context</div>
+        <div class="section-head-desc">Why does this story exist? What's the problem?</div>
+      </div>
+      <span class="section-optional">Optional</span>
+      <span class="section-toggle">▾</span>
+    </div>
+    <div class="section-body" id="sb-context">
+      <div class="field-group">
+        <div class="field-label">Problem Statement <span class="req">*</span></div>
+        <textarea class="field-textarea" id="problemStatement" placeholder="What user problem or business need does this story address?" oninput="updatePreview()"></textarea>
+      </div>
+      <div class="two-col">
+        <div class="field-group">
+          <div class="field-label">Success Metric</div>
+          <input class="field-input" id="successMetric" placeholder="e.g., +15% task completion rate" oninput="updatePreview()">
+        </div>
+        <div class="field-group">
+          <div class="field-label">Story Points</div>
+          <input class="field-input" id="storyPoints" placeholder="e.g., 5" type="number" oninput="updatePreview()">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="form-section">
+    <div class="section-head" onclick="toggleSection(this)">
+      <div class="section-head-icon badge-green">⛔</div>
+      <div class="section-head-text">
+        <div class="section-head-title">Out of Scope</div>
+        <div class="section-head-desc">Explicitly what this story does NOT include</div>
+      </div>
+      <span class="section-optional">Optional</span>
+      <span class="section-toggle">▾</span>
+    </div>
+    <div class="section-body" id="sb-oos">
+      <div class="field-group">
+        <textarea class="field-textarea" id="outOfScope" placeholder="List things explicitly excluded from this story to prevent scope creep..." oninput="updatePreview()"></textarea>
+        <div class="field-hint">Being explicit about exclusions prevents misaligned expectations with engineering.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="form-section">
+    <div class="section-head" onclick="toggleSection(this)">
+      <div class="section-head-icon badge-green">🔗</div>
+      <div class="section-head-text">
+        <div class="section-head-title">Dependencies & Notes</div>
+        <div class="section-head-desc">Blockers, related tickets, design links</div>
+      </div>
+      <span class="section-optional">Optional</span>
+      <span class="section-toggle">▾</span>
+    </div>
+    <div class="section-body" id="sb-deps">
+      <div class="field-group">
+        <div class="field-label">Dependencies</div>
+        <textarea class="field-textarea" id="dependencies" placeholder="e.g., Blocked by Auth API (JIRA-234), needs design approval from @Priya..." oninput="updatePreview()" style="min-height:70px"></textarea>
+      </div>
+      <div class="field-group">
+        <div class="field-label">Additional Notes</div>
+        <textarea class="field-textarea" id="notes" placeholder="Edge cases, technical considerations, stakeholder comments..." oninput="updatePreview()" style="min-height:70px"></textarea>
+      </div>
+    </div>
+  </div>
+
+</div>`;
+}
+
+function renderPRD() {
+  return `
+<div class="doc-header">
+  <div class="doc-type-tag" style="background:var(--slate-bg);color:var(--slate);">📋 PRODUCT REQUIREMENTS DOCUMENT</div>
+  <textarea class="doc-title-input" id="docTitle" placeholder="Product or feature name..." rows="1" oninput="autoResize(this);updatePreview()" onkeyup="updatePreview()"></textarea>
+  <div class="doc-meta-row">
+    <div class="meta-field"><label>Author</label><input id="metaAuthor" placeholder="PM name" oninput="updatePreview()"></div>
+    <div class="meta-field"><label>Version</label><input id="metaVersion" placeholder="v1.0" oninput="updatePreview()"></div>
+    <div class="meta-field"><label>Date</label><input id="metaDate" type="date" oninput="updatePreview()"></div>
+    <div class="meta-field"><label>Status</label>
+      <select id="metaStatus" oninput="updatePreview()">
+        <option>Draft</option><option>In Review</option><option>Approved</option><option>Shipped</option>
+      </select>
+    </div>
+  </div>
+</div>
+<div class="form-sections">
+
+  <div class="form-section">
+    <div class="section-head" onclick="toggleSection(this)">
+      <div class="section-head-icon badge-slate">🎯</div>
+      <div class="section-head-text">
+        <div class="section-head-title">Problem Statement</div>
+        <div class="section-head-desc">The pain we're solving and for whom</div>
+      </div>
+      <span class="section-required">Required</span>
+      <span class="section-toggle">▾</span>
+    </div>
+    <div class="section-body">
+      <div class="field-group">
+        <div class="field-label">Problem <span class="req">*</span></div>
+        <textarea class="field-textarea" id="prdProblem" placeholder="Describe the specific problem users or the business is facing..." oninput="updatePreview()"></textarea>
+      </div>
+      <div class="two-col">
+        <div class="field-group">
+          <div class="field-label">Target User</div>
+          <input class="field-input" id="prdUser" placeholder="e.g., First-time mobile shoppers" oninput="updatePreview()">
+        </div>
+        <div class="field-group">
+          <div class="field-label">User Impact</div>
+          <input class="field-input" id="prdImpact" placeholder="e.g., ~200K users affected monthly" oninput="updatePreview()">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="form-section">
+    <div class="section-head" onclick="toggleSection(this)">
+      <div class="section-head-icon badge-slate">🏆</div>
+      <div class="section-head-text">
+        <div class="section-head-title">Goals & Success Metrics</div>
+        <div class="section-head-desc">What does winning look like?</div>
+      </div>
+      <span class="section-required">Required</span>
+      <span class="section-toggle">▾</span>
+    </div>
+    <div class="section-body">
+      <div class="field-group">
+        <div class="field-label">Primary Goal</div>
+        <input class="field-input" id="prdGoal" placeholder="e.g., Reduce checkout drop-off by 20% in Q2" oninput="updatePreview()">
+      </div>
+      <div class="two-col">
+        <div class="field-group">
+          <div class="field-label">North Star Metric</div>
+          <input class="field-input" id="prdNSM" placeholder="e.g., Checkout completion rate" oninput="updatePreview()">
+        </div>
+        <div class="field-group">
+          <div class="field-label">Guardrail Metric</div>
+          <input class="field-input" id="prdGuardrail" placeholder="e.g., Must not reduce AOV" oninput="updatePreview()">
+        </div>
+      </div>
+      <div class="field-group">
+        <div class="field-label">Supporting Metrics</div>
+        <textarea class="field-textarea" id="prdMetrics" placeholder="Secondary metrics you'll track (session time, error rate, NPS, etc.)" oninput="updatePreview()" style="min-height:70px"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <div class="form-section">
+    <div class="section-head" onclick="toggleSection(this)">
+      <div class="section-head-icon badge-slate">🔧</div>
+      <div class="section-head-text">
+        <div class="section-head-title">Requirements</div>
+        <div class="section-head-desc">Functional and non-functional requirements</div>
+      </div>
+      <span class="section-required">Required</span>
+      <span class="section-toggle">▾</span>
+    </div>
+    <div class="section-body">
+      <div class="field-group">
+        <div class="field-label">Functional Requirements</div>
+        <textarea class="field-textarea" id="prdFunctional" placeholder="What the product must DO:&#10;- Users can save payment methods&#10;- System supports Apple Pay and Google Pay&#10;- Checkout completes in < 3 taps" oninput="updatePreview()"></textarea>
+      </div>
+      <div class="field-group">
+        <div class="field-label">Non-Functional Requirements</div>
+        <textarea class="field-textarea" id="prdNonFunctional" placeholder="Performance, security, scalability requirements:&#10;- Page load < 2s&#10;- PCI-DSS compliant&#10;- 99.9% uptime" oninput="updatePreview()"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <div class="form-section">
+    <div class="section-head" onclick="toggleSection(this)">
+      <div class="section-head-icon badge-slate">❌</div>
+      <div class="section-head-text">
+        <div class="section-head-title">Out of Scope & Assumptions</div>
+        <div class="section-head-desc">Boundaries and assumptions baked into this PRD</div>
+      </div>
+      <span class="section-optional">Optional</span>
+      <span class="section-toggle">▾</span>
+    </div>
+    <div class="section-body">
+      <div class="two-col">
+        <div class="field-group">
+          <div class="field-label">Out of Scope</div>
+          <textarea class="field-textarea" id="prdOOS" placeholder="What this PRD explicitly excludes..." oninput="updatePreview()" style="min-height:100px"></textarea>
+        </div>
+        <div class="field-group">
+          <div class="field-label">Assumptions</div>
+          <textarea class="field-textarea" id="prdAssumptions" placeholder="What we're assuming to be true (to be validated)..." oninput="updatePreview()" style="min-height:100px"></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="form-section">
+    <div class="section-head" onclick="toggleSection(this)">
+      <div class="section-head-icon badge-slate">🗓️</div>
+      <div class="section-head-text">
+        <div class="section-head-title">Timeline & Risks</div>
+        <div class="section-head-desc">Key milestones and known blockers</div>
+      </div>
+      <span class="section-optional">Optional</span>
+      <span class="section-toggle">▾</span>
+    </div>
+    <div class="section-body">
+      <div class="two-col">
+        <div class="field-group">
+          <div class="field-label">Target Launch</div>
+          <input class="field-input" id="prdLaunch" placeholder="e.g., End of Q2 2025" oninput="updatePreview()">
+        </div>
+        <div class="field-group">
+          <div class="field-label">Engineering Owner</div>
+          <input class="field-input" id="prdEng" placeholder="e.g., Rohan / Checkout team" oninput="updatePreview()">
+        </div>
+      </div>
+      <div class="field-group">
+        <div class="field-label">Risks & Mitigations</div>
+        <textarea class="field-textarea" id="prdRisks" placeholder="Known risks and how you plan to mitigate them..." oninput="updatePreview()"></textarea>
+      </div>
+    </div>
+  </div>
+
+</div>`;
+}
+
+function renderRoadmap() {
+  return `
+<div class="doc-header">
+  <div class="doc-type-tag" style="background:var(--amber-bg);color:var(--amber);">🗺️ PRODUCT ROADMAP</div>
+  <textarea class="doc-title-input" id="docTitle" placeholder="Product area or team roadmap..." rows="1" oninput="autoResize(this);updatePreview()" onkeyup="updatePreview()"></textarea>
+  <div class="doc-meta-row">
+    <div class="meta-field"><label>Team</label><input id="metaTeam" placeholder="Growth / Platform / Core" oninput="updatePreview()"></div>
+    <div class="meta-field"><label>Year</label><input id="metaYear" placeholder="2025" oninput="updatePreview()"></div>
+    <div class="meta-field"><label>Author</label><input id="metaAuthor" placeholder="PM name" oninput="updatePreview()"></div>
+  </div>
+</div>
+<div class="form-sections">
+
+  <div class="form-section">
+    <div class="section-head" onclick="toggleSection(this)">
+      <div class="section-head-icon badge-amber">⭐</div>
+      <div class="section-head-text">
+        <div class="section-head-title">Vision & Strategy</div>
+        <div class="section-head-desc">Where we're going and why</div>
+      </div>
+      <span class="section-required">Required</span>
+      <span class="section-toggle">▾</span>
+    </div>
+    <div class="section-body">
+      <div class="field-group">
+        <div class="field-label">Vision Statement</div>
+        <textarea class="field-textarea" id="rdmVision" placeholder="What does the world look like if we succeed? (1-2 inspiring sentences)" oninput="updatePreview()" style="min-height:70px"></textarea>
+      </div>
+      <div class="field-group">
+        <div class="field-label">Strategic Bets</div>
+        <textarea class="field-textarea" id="rdmBets" placeholder="3 key strategic bets for this year:&#10;1. Bet on mobile-first engagement&#10;2. Expand to B2B segment&#10;3. Reduce onboarding friction" oninput="updatePreview()"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <div class="form-section">
+    <div class="section-head" onclick="toggleSection(this)">
+      <div class="section-head-icon badge-amber">📅</div>
+      <div class="section-head-text">
+        <div class="section-head-title">Quarterly Themes</div>
+        <div class="section-head-desc">What each quarter is focused on</div>
+      </div>
+      <span class="section-required">Required</span>
+      <span class="section-toggle">▾</span>
+    </div>
+    <div class="section-body">
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        ${['Q1','Q2','Q3','Q4'].map((q,i) => `
+        <div class="roadmap-item">
+          <div class="roadmap-item-fields">
+            <div class="roadmap-quarter-label">${q} · 2025</div>
+            <input class="roadmap-item-input" id="rdm${q}Theme" placeholder="Quarter theme (e.g., Foundation & Stability)" oninput="updatePreview()">
+            <input class="roadmap-item-input" style="font-size:12px;color:var(--muted);margin-top:4px;" id="rdm${q}Items" placeholder="Key initiatives: Login redesign, API v2, Onboarding flow..." oninput="updatePreview()">
+          </div>
+          <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end;">
+            <select style="font-family:'IBM Plex Mono',monospace;font-size:10px;border:1.5px solid var(--border);border-radius:6px;padding:4px 8px;background:white;color:var(--ink2);cursor:pointer;outline:none;" id="rdm${q}Status" oninput="updatePreview()">
+              <option>Planned</option><option>In Progress</option><option>Complete</option><option>At Risk</option>
+            </select>
+          </div>
+        </div>`).join('')}
+      </div>
+    </div>
+  </div>
+
+  <div class="form-section">
+    <div class="section-head" onclick="toggleSection(this)">
+      <div class="section-head-icon badge-amber">📊</div>
+      <div class="section-head-text">
+        <div class="section-head-title">OKRs</div>
+        <div class="section-head-desc">Objectives and Key Results for the period</div>
+      </div>
+      <span class="section-optional">Optional</span>
+      <span class="section-toggle">▾</span>
+    </div>
+    <div class="section-body">
+      <div class="field-group">
+        <div class="field-label">Objective</div>
+        <input class="field-input" id="rdmObj" placeholder="e.g., Become the most trusted checkout experience in D2C" oninput="updatePreview()">
+      </div>
+      <div class="field-group">
+        <div class="field-label">Key Results</div>
+        <textarea class="field-textarea" id="rdmKRs" placeholder="KR1: Increase checkout conversion from 61% to 78%&#10;KR2: Reduce average checkout time from 4.2 to 2.5 mins&#10;KR3: Achieve NPS of 45+ for checkout experience" oninput="updatePreview()"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <div class="form-section">
+    <div class="section-head" onclick="toggleSection(this)">
+      <div class="section-head-icon badge-amber">⚠️</div>
+      <div class="section-head-text">
+        <div class="section-head-title">Dependencies & Risks</div>
+        <div class="section-head-desc">What could derail the plan</div>
+      </div>
+      <span class="section-optional">Optional</span>
+      <span class="section-toggle">▾</span>
+    </div>
+    <div class="section-body">
+      <div class="two-col">
+        <div class="field-group">
+          <div class="field-label">Cross-team Dependencies</div>
+          <textarea class="field-textarea" id="rdmDeps" placeholder="Teams or external systems this roadmap depends on..." oninput="updatePreview()" style="min-height:90px"></textarea>
+        </div>
+        <div class="field-group">
+          <div class="field-label">Key Risks</div>
+          <textarea class="field-textarea" id="rdmRisks" placeholder="Things that could delay or derail this roadmap..." oninput="updatePreview()" style="min-height:90px"></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>`;
+}
+
+function renderSprint() {
+  return `
+<div class="doc-header">
+  <div class="doc-type-tag" style="background:var(--rose-bg);color:var(--rose);">⚡ SPRINT PLAN</div>
+  <textarea class="doc-title-input" id="docTitle" placeholder="Sprint name or number..." rows="1" oninput="autoResize(this);updatePreview()" onkeyup="updatePreview()"></textarea>
+  <div class="doc-meta-row">
+    <div class="meta-field"><label>Sprint #</label><input id="metaSprint" placeholder="Sprint 14" oninput="updatePreview()"></div>
+    <div class="meta-field"><label>Start Date</label><input id="metaStart" type="date" oninput="updatePreview()"></div>
+    <div class="meta-field"><label>End Date</label><input id="metaEnd" type="date" oninput="updatePreview()"></div>
+    <div class="meta-field"><label>Team</label><input id="metaTeam" placeholder="Team name" oninput="updatePreview()"></div>
+  </div>
+</div>
+<div class="form-sections">
+
+  <div class="form-section">
+    <div class="section-head" onclick="toggleSection(this)">
+      <div class="section-head-icon badge-rose">🏁</div>
+      <div class="section-head-text">
+        <div class="section-head-title">Sprint Goal</div>
+        <div class="section-head-desc">One sentence — what does this sprint achieve?</div>
+      </div>
+      <span class="section-required">Required</span>
+      <span class="section-toggle">▾</span>
+    </div>
+    <div class="section-body">
+      <div class="field-group">
+        <div class="field-label">Goal Statement <span class="req">*</span></div>
+        <textarea class="field-textarea" id="sprintGoal" placeholder="e.g., Enable users to complete onboarding without support intervention, reducing onboarding drop-off by 30%." oninput="updatePreview()" style="min-height:70px"></textarea>
+        <div class="field-hint">Make it outcome-based, not task-based. Bad: "Ship the new onboarding." Good: "Users can self-serve through onboarding."</div>
+      </div>
+      <div class="two-col">
+        <div class="field-group">
+          <div class="field-label">Sprint Capacity (points)</div>
+          <input class="field-input" id="sprintCapacity" placeholder="e.g., 40" type="number" oninput="updatePreview()">
+        </div>
+        <div class="field-group">
+          <div class="field-label">Success Signal</div>
+          <input class="field-input" id="sprintSuccess" placeholder="e.g., Onboarding rate > 75%" oninput="updatePreview()">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="form-section">
+    <div class="section-head" onclick="toggleSection(this)">
+      <div class="section-head-icon badge-rose">📋</div>
+      <div class="section-head-text">
+        <div class="section-head-title">Sprint Backlog</div>
+        <div class="section-head-desc">Tasks committed to this sprint</div>
+      </div>
+      <span class="section-required">Required</span>
+      <span class="section-toggle">▾</span>
+    </div>
+    <div class="section-body" id="sb-sprint-backlog">
+      <table class="sprint-table" id="sprintTable">
+        <thead>
+          <tr>
+            <th>Task / Story</th>
+            <th>Owner</th>
+            <th>Points</th>
+            <th>Status</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="sprintRows"></tbody>
+      </table>
+      <button class="add-row-btn" style="margin-top:10px" onclick="addSprintRow()">+ Add Task</button>
+    </div>
+  </div>
+
+  <div class="form-section">
+    <div class="section-head" onclick="toggleSection(this)">
+      <div class="section-head-icon badge-rose">⛔</div>
+      <div class="section-head-text">
+        <div class="section-head-title">Carry-over & Blockers</div>
+        <div class="section-head-desc">From last sprint and current blockers</div>
+      </div>
+      <span class="section-optional">Optional</span>
+      <span class="section-toggle">▾</span>
+    </div>
+    <div class="section-body">
+      <div class="two-col">
+        <div class="field-group">
+          <div class="field-label">Carried Over from Last Sprint</div>
+          <textarea class="field-textarea" id="carryover" placeholder="Tasks or stories not completed last sprint..." oninput="updatePreview()" style="min-height:80px"></textarea>
+        </div>
+        <div class="field-group">
+          <div class="field-label">Current Blockers</div>
+          <textarea class="field-textarea" id="blockers" placeholder="Known blockers that need resolution..." oninput="updatePreview()" style="min-height:80px"></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>`;
+}
+
+function renderOpp() {
+  return `
+<div class="doc-header">
+  <div class="doc-type-tag" style="background:var(--violet-bg);color:var(--violet);">💡 OPPORTUNITY BRIEF</div>
+  <textarea class="doc-title-input" id="docTitle" placeholder="Opportunity name..." rows="1" oninput="autoResize(this);updatePreview()" onkeyup="updatePreview()"></textarea>
+  <div class="doc-meta-row">
+    <div class="meta-field"><label>Author</label><input id="metaAuthor" placeholder="PM name" oninput="updatePreview()"></div>
+    <div class="meta-field"><label>Date</label><input id="metaDate" type="date" oninput="updatePreview()"></div>
+    <div class="meta-field"><label>Confidence</label>
+      <select id="metaConfidence" oninput="updatePreview()">
+        <option>Low — Hunch</option><option>Medium — Some data</option><option>High — Validated</option>
+      </select>
+    </div>
+  </div>
+</div>
+<div class="form-sections">
+
+  <div class="form-section">
+    <div class="section-head" onclick="toggleSection(this)">
+      <div class="section-head-icon badge-violet">🔍</div>
+      <div class="section-head-text">
+        <div class="section-head-title">The Problem</div>
+        <div class="section-head-desc">Whose problem, what problem, and why now?</div>
+      </div>
+      <span class="section-required">Required</span>
+      <span class="section-toggle">▾</span>
+    </div>
+    <div class="section-body">
+      <div class="field-group">
+        <div class="field-label">Who has this problem?</div>
+        <input class="field-input" id="oppWho" placeholder="e.g., SMB customers with 5-50 employees trying to manage invoicing" oninput="updatePreview()">
+      </div>
+      <div class="field-group">
+        <div class="field-label">What is the problem?</div>
+        <textarea class="field-textarea" id="oppWhat" placeholder="Describe the specific friction, pain, or unmet need in concrete terms." oninput="updatePreview()"></textarea>
+      </div>
+      <div class="two-col">
+        <div class="field-group">
+          <div class="field-label">How big is this problem?</div>
+          <input class="field-input" id="oppSize" placeholder="e.g., Affects 40% of DAU, 12K users" oninput="updatePreview()">
+        </div>
+        <div class="field-group">
+          <div class="field-label">Evidence / Signal</div>
+          <input class="field-input" id="oppEvidence" placeholder="e.g., 34 support tickets, NPS feedback, data spike" oninput="updatePreview()">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="form-section">
+    <div class="section-head" onclick="toggleSection(this)">
+      <div class="section-head-icon badge-violet">✨</div>
+      <div class="section-head-text">
+        <div class="section-head-title">The Opportunity</div>
+        <div class="section-head-desc">What becomes possible if we solve this?</div>
+      </div>
+      <span class="section-required">Required</span>
+      <span class="section-toggle">▾</span>
+    </div>
+    <div class="section-body">
+      <div class="field-group">
+        <div class="field-label">Opportunity Statement</div>
+        <textarea class="field-textarea" id="oppStatement" placeholder="If we solve [problem] for [users], we can unlock [business outcome]." oninput="updatePreview()"></textarea>
+      </div>
+      <div class="two-col">
+        <div class="field-group">
+          <div class="field-label">Business Impact (est.)</div>
+          <input class="field-input" id="oppBizImpact" placeholder="e.g., +8% retention, +₹2Cr ARR" oninput="updatePreview()">
+        </div>
+        <div class="field-group">
+          <div class="field-label">Strategic Fit</div>
+          <input class="field-input" id="oppStrategic" placeholder="e.g., Aligns with Q2 retention OKR" oninput="updatePreview()">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="form-section">
+    <div class="section-head" onclick="toggleSection(this)">
+      <div class="section-head-icon badge-violet">🧪</div>
+      <div class="section-head-text">
+        <div class="section-head-title">Solution Space</div>
+        <div class="section-head-desc">Possible approaches (not commitments)</div>
+      </div>
+      <span class="section-optional">Optional</span>
+      <span class="section-toggle">▾</span>
+    </div>
+    <div class="section-body">
+      <div class="field-group">
+        <div class="field-label">Possible Approaches</div>
+        <textarea class="field-textarea" id="oppSolutions" placeholder="Option A: ...&#10;Option B: ...&#10;Option C: ..." oninput="updatePreview()"></textarea>
+        <div class="field-hint">Don't commit to a solution here — this brief is about defining the opportunity. Solutions come after validation.</div>
+      </div>
+      <div class="field-group">
+        <div class="field-label">What we'd need to validate</div>
+        <textarea class="field-textarea" id="oppValidation" placeholder="e.g., User interviews with 5 SMB customers, A/B test on invoice flow, prototype test" oninput="updatePreview()" style="min-height:70px"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <div class="form-section">
+    <div class="section-head" onclick="toggleSection(this)">
+      <div class="section-head-icon badge-violet">🤔</div>
+      <div class="section-head-text">
+        <div class="section-head-title">Why Now? Why Us?</div>
+        <div class="section-head-desc">Urgency and right-to-win</div>
+      </div>
+      <span class="section-optional">Optional</span>
+      <span class="section-toggle">▾</span>
+    </div>
+    <div class="section-body">
+      <div class="two-col">
+        <div class="field-group">
+          <div class="field-label">Why is the timing right?</div>
+          <textarea class="field-textarea" id="oppWhyNow" placeholder="Market shift, user behavior change, competitor move..." oninput="updatePreview()" style="min-height:90px"></textarea>
+        </div>
+        <div class="field-group">
+          <div class="field-label">Our competitive advantage</div>
+          <textarea class="field-textarea" id="oppWhyUs" placeholder="What do we have (data, distribution, tech) that others don't?" oninput="updatePreview()" style="min-height:90px"></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>`;
+}
+
+// ─── RENDER ENGINE ────────────────────────────────────────────
+function switchDoc(type, navEl, sideEl) {
+  currentDoc = type;
+
+  // Update nav tabs
+  if (navEl) {
+    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+    navEl.classList.add('active');
+  }
+  // Sync nav tab if triggered from sidebar
+  if (!navEl) {
+    document.querySelectorAll('.nav-tab').forEach(t => {
+      t.classList.toggle('active', t.dataset.doc === type);
+    });
+  }
+  // Update sidebar items
+  document.querySelectorAll('.doc-type-item').forEach((el, i) => {
+    el.classList.remove('active');
+    const types = ['user-story','prd','roadmap','sprint','opp','gantt'];
+    if (types[i] === type) el.classList.add('active');
+  });
+
+  // Gantt mode: hide right preview panel, use full width
+  const workspace = document.querySelector('.workspace');
+  if (type === 'gantt') {
+    workspace.classList.add('gantt-mode');
+  } else {
+    workspace.classList.remove('gantt-mode');
+  }
+
+  // Reset rows
+  storyRows = [{ who: '', want: '', so: '' }];
+  acceptanceRows = [''];
+  sprintRows = [{ task: '', owner: '', points: '', status: 'todo' }];
+
+  const templates = {
+    'user-story': renderUserStory,
+    'prd': renderPRD,
+    'roadmap': renderRoadmap,
+    'sprint': renderSprint,
+    'opp': renderOpp,
+    'gantt': renderGantt,
+  };
+
+  document.getElementById('editorArea').innerHTML = templates[type]();
+  document.getElementById('tipCard').innerHTML = tips[type];
+
+  // Render dynamic rows
+  if (type === 'user-story') {
+    renderStoryRows();
+    renderAcceptanceRows();
+  }
+  if (type === 'sprint') {
+    renderSprintRows();
+  }
+  if (type === 'gantt') {
+    renderGanttChart();
+  }
+
+  // Animate
+  document.querySelectorAll('.form-section').forEach((el, i) => {
+    el.style.animationDelay = `${i * 0.06}s`;
+  });
+
+  selectedPriority = 'P3';
+  if (type !== 'gantt') updatePreview();
+  updateProgress();
+  syncExportButtons();
+}
+
+// ─── STORY ROWS ───────────────────────────────────────────────
+function renderStoryRows() {
+  const container = document.getElementById('storyRows');
+  if (!container) return;
+  container.innerHTML = storyRows.map((row, i) => `
+    <div class="story-row">
+      <input placeholder="As a..." value="${row.who}" oninput="storyRows[${i}].who=this.value;updatePreview()">
+      <span class="story-connector">I want to</span>
+      <input placeholder="perform this action..." value="${row.want}" oninput="storyRows[${i}].want=this.value;updatePreview()">
+      <span class="story-connector">so that</span>
+      <input placeholder="I achieve this goal..." value="${row.so}" oninput="storyRows[${i}].so=this.value;updatePreview()">
+      ${storyRows.length > 1 ? `<button class="remove-row-btn" onclick="removeStoryRow(${i})">×</button>` : ''}
+    </div>
+  `).join('');
+}
+
+function addStoryRow() {
+  storyRows.push({ who: '', want: '', so: '' });
+  renderStoryRows();
+}
+
+function removeStoryRow(i) {
+  storyRows.splice(i, 1);
+  renderStoryRows();
+  updatePreview();
+}
+
+// ─── ACCEPTANCE ROWS ──────────────────────────────────────────
+function renderAcceptanceRows() {
+  const container = document.getElementById('acceptanceRows');
+  if (!container) return;
+  container.innerHTML = acceptanceRows.map((row, i) => `
+    <div class="acceptance-row" style="margin-bottom:8px">
+      <div class="ac-num">${i + 1}</div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <textarea class="field-textarea" style="min-height:52px;flex:1" placeholder="Given [context], when [action], then [outcome]..." oninput="acceptanceRows[${i}]=this.value;updatePreview()">${row}</textarea>
+        ${acceptanceRows.length > 1 ? `<button class="remove-row-btn" onclick="removeAcceptanceRow(${i})">×</button>` : ''}
+      </div>
+    </div>
+  `).join('');
+}
+
+function addAcceptanceRow() {
+  acceptanceRows.push('');
+  renderAcceptanceRows();
+}
+
+function removeAcceptanceRow(i) {
+  acceptanceRows.splice(i, 1);
+  renderAcceptanceRows();
+  updatePreview();
+}
+
+// ─── SPRINT ROWS ──────────────────────────────────────────────
+function renderSprintRows() {
+  const tbody = document.getElementById('sprintRows');
+  if (!tbody) return;
+  tbody.innerHTML = sprintRows.map((row, i) => `
+    <tr>
+      <td><input value="${row.task}" placeholder="Task or story name..." oninput="sprintRows[${i}].task=this.value;updatePreview()"></td>
+      <td><input value="${row.owner}" placeholder="@name" style="max-width:90px" oninput="sprintRows[${i}].owner=this.value;updatePreview()"></td>
+      <td><input value="${row.points}" placeholder="3" type="number" style="max-width:60px" oninput="sprintRows[${i}].points=this.value;updatePreview()"></td>
+      <td>
+        <select oninput="sprintRows[${i}].status=this.value;updatePreview()" style="font-family:'IBM Plex Mono',monospace;font-size:10px;border:1.5px solid var(--border);border-radius:6px;padding:4px 8px;background:white;cursor:pointer;outline:none;">
+          <option ${row.status==='todo'?'selected':''}>todo</option>
+          <option ${row.status==='in-progress'?'selected':''}>in-progress</option>
+          <option ${row.status==='done'?'selected':''}>done</option>
+          <option ${row.status==='blocked'?'selected':''}>blocked</option>
+        </select>
+      </td>
+      <td>${sprintRows.length > 1 ? `<button class="remove-row-btn" onclick="removeSprintRow(${i})">×</button>` : ''}</td>
+    </tr>
+  `).join('');
+}
+
+function addSprintRow() {
+  sprintRows.push({ task: '', owner: '', points: '', status: 'todo' });
+  renderSprintRows();
+}
+
+function removeSprintRow(i) {
+  sprintRows.splice(i, 1);
+  renderSprintRows();
+  updatePreview();
+}
+
+// ─── PRIORITY ─────────────────────────────────────────────────
+let selectedPriority = 'P3';
+function setPriority(p, el) {
+  selectedPriority = p;
+  document.querySelectorAll('.priority-pill').forEach(pill => {
+    pill.className = 'priority-pill';
+  });
+  const classMap = { P1: 'sel-p1', P2: 'sel-p2', P3: 'sel-p3', P4: 'sel-p4' };
+  el.classList.add(classMap[p]);
+  updatePreview();
+}
+
+// ─── TOGGLE SECTION ───────────────────────────────────────────
+function toggleSection(head) {
+  const body = head.nextElementSibling;
+  const arrow = head.querySelector('.section-toggle');
+  if (body.classList.contains('collapsed')) {
+    body.classList.remove('collapsed');
+    arrow.textContent = '▾';
+  } else {
+    body.classList.add('collapsed');
+    arrow.textContent = '▸';
+  }
+}
+
+// ─── AUTO RESIZE TEXTAREA ─────────────────────────────────────
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = el.scrollHeight + 'px';
+}
+
+// ─── PROGRESS ─────────────────────────────────────────────────
+function updateProgress() {
+  setTimeout(() => {
+    const inputs = document.querySelectorAll('.field-input, .field-textarea, .doc-title-input');
+    let filled = 0;
+    inputs.forEach(el => { if (el.value.trim()) filled++; });
+    const total = inputs.length;
+    const pct = total ? Math.round((filled / total) * 100) : 0;
+    const fill = document.getElementById('progressFill');
+    const label = document.getElementById('progressLabel');
+    const pctEl = document.getElementById('progressPct');
+    if (fill) fill.style.width = pct + '%';
+    if (label) label.textContent = `${filled} of ${total} fields filled`;
+    if (pctEl) pctEl.textContent = pct + '%';
+  }, 100);
+}
+
+// ─── PREVIEW ──────────────────────────────────────────────────
+function g(id) {
+  const el = document.getElementById(id);
+  return el ? el.value.trim() : '';
+}
+
+function updatePreview() {
+  updateProgress();
+  const preview = document.getElementById('previewDoc');
+  if (!preview) return;
+
+  let html = '';
+
+  if (currentDoc === 'user-story') {
+    const title = g('docTitle') || 'Untitled User Story';
+    html += `<div class="preview-title-area">${title}</div>`;
+    const meta = [g('metaAuthor'),g('metaEpic'),g('metaSprint'),selectedPriority].filter(Boolean).join(' · ');
+    if (meta) html += `<div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:14px">${meta}</div>`;
+
+    const validStories = storyRows.filter(r => r.want);
+    if (validStories.length) {
+      html += `<div class="preview-section"><div class="preview-section-title">USER STORIES</div><div class="preview-section-body">`;
+      validStories.forEach(r => {
+        html += `• As a <strong>${r.who || '…'}</strong>, I want to <strong>${r.want}</strong>, so that <strong>${r.so || '…'}</strong><br>`;
+      });
+      html += `</div></div>`;
+    }
+    const validAC = acceptanceRows.filter(Boolean);
+    if (validAC.length) {
+      html += `<div class="preview-section"><div class="preview-section-title">ACCEPTANCE CRITERIA</div><div class="preview-section-body">`;
+      validAC.forEach((ac, i) => { html += `${i+1}. ${ac}<br>`; });
+      html += `</div></div>`;
+    }
+    if (g('problemStatement')) html += `<div class="preview-section"><div class="preview-section-title">PROBLEM CONTEXT</div><div class="preview-section-body">${g('problemStatement')}</div></div>`;
+    const sm = g('successMetric'), sp = g('storyPoints');
+    if (sm || sp) html += `<div class="preview-section"><div class="preview-section-title">METRICS & SIZE</div><div class="preview-section-body">${sm ? `Success: ${sm}` : ''}${sm && sp ? ' · ' : ''}${sp ? `${sp} pts` : ''}</div></div>`;
+    if (g('outOfScope')) html += `<div class="preview-section"><div class="preview-section-title">OUT OF SCOPE</div><div class="preview-section-body">${g('outOfScope')}</div></div>`;
+    if (g('dependencies')) html += `<div class="preview-section"><div class="preview-section-title">DEPENDENCIES</div><div class="preview-section-body">${g('dependencies')}</div></div>`;
+    if (g('notes')) html += `<div class="preview-section"><div class="preview-section-title">NOTES</div><div class="preview-section-body">${g('notes')}</div></div>`;
+  }
+
+  else if (currentDoc === 'prd') {
+    const title = g('docTitle') || 'Untitled PRD';
+    html += `<div class="preview-title-area">${title}</div>`;
+    const meta = [g('metaAuthor'), g('metaVersion'), g('metaStatus')].filter(Boolean).join(' · ');
+    if (meta) html += `<div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:14px">${meta}</div>`;
+    if (g('prdProblem')) html += `<div class="preview-section"><div class="preview-section-title">PROBLEM</div><div class="preview-section-body">${g('prdProblem')}</div></div>`;
+    const who = [g('prdUser'), g('prdImpact')].filter(Boolean).join(' — ');
+    if (who) html += `<div class="preview-section"><div class="preview-section-title">TARGET USER</div><div class="preview-section-body">${who}</div></div>`;
+    if (g('prdGoal')) html += `<div class="preview-section"><div class="preview-section-title">GOAL</div><div class="preview-section-body">${g('prdGoal')}</div></div>`;
+    const metrics = [g('prdNSM') && `⭐ NSM: ${g('prdNSM')}`, g('prdGuardrail') && `🛡 Guardrail: ${g('prdGuardrail')}`].filter(Boolean).join('<br>');
+    if (metrics) html += `<div class="preview-section"><div class="preview-section-title">METRICS</div><div class="preview-section-body">${metrics}</div></div>`;
+    if (g('prdFunctional')) html += `<div class="preview-section"><div class="preview-section-title">FUNCTIONAL REQUIREMENTS</div><div class="preview-section-body">${g('prdFunctional')}</div></div>`;
+    if (g('prdNonFunctional')) html += `<div class="preview-section"><div class="preview-section-title">NON-FUNCTIONAL REQUIREMENTS</div><div class="preview-section-body">${g('prdNonFunctional')}</div></div>`;
+    if (g('prdOOS')) html += `<div class="preview-section"><div class="preview-section-title">OUT OF SCOPE</div><div class="preview-section-body">${g('prdOOS')}</div></div>`;
+    if (g('prdRisks')) html += `<div class="preview-section"><div class="preview-section-title">RISKS</div><div class="preview-section-body">${g('prdRisks')}</div></div>`;
+    const timeline = [g('prdLaunch') && `Launch: ${g('prdLaunch')}`, g('prdEng') && `Eng: ${g('prdEng')}`].filter(Boolean).join(' · ');
+    if (timeline) html += `<div class="preview-section"><div class="preview-section-title">TIMELINE</div><div class="preview-section-body">${timeline}</div></div>`;
+  }
+
+  else if (currentDoc === 'roadmap') {
+    const title = g('docTitle') || 'Product Roadmap';
+    html += `<div class="preview-title-area">${title}</div>`;
+    const meta = [g('metaTeam'), g('metaYear'), g('metaAuthor')].filter(Boolean).join(' · ');
+    if (meta) html += `<div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:14px">${meta}</div>`;
+    if (g('rdmVision')) html += `<div class="preview-section"><div class="preview-section-title">VISION</div><div class="preview-section-body"><em>${g('rdmVision')}</em></div></div>`;
+    if (g('rdmBets')) html += `<div class="preview-section"><div class="preview-section-title">STRATEGIC BETS</div><div class="preview-section-body">${g('rdmBets')}</div></div>`;
+    const quarters = ['Q1','Q2','Q3','Q4'];
+    const qHtml = quarters.map(q => {
+      const theme = g(`rdm${q}Theme`), items = g(`rdm${q}Items`), status = (document.getElementById(`rdm${q}Status`) || {}).value || '';
+      if (!theme) return '';
+      return `<strong>${q} — ${theme}</strong>${status ? ` [${status}]` : ''}<br>${items ? items + '<br>' : ''}`;
+    }).filter(Boolean).join('<br>');
+    if (qHtml) html += `<div class="preview-section"><div class="preview-section-title">QUARTERLY PLAN</div><div class="preview-section-body">${qHtml}</div></div>`;
+    if (g('rdmObj')) html += `<div class="preview-section"><div class="preview-section-title">OBJECTIVE</div><div class="preview-section-body">${g('rdmObj')}</div></div>`;
+    if (g('rdmKRs')) html += `<div class="preview-section"><div class="preview-section-title">KEY RESULTS</div><div class="preview-section-body">${g('rdmKRs')}</div></div>`;
+  }
+
+  else if (currentDoc === 'sprint') {
+    const title = g('docTitle') || 'Sprint Plan';
+    html += `<div class="preview-title-area">${title}</div>`;
+    const meta = [g('metaSprint'), g('metaTeam'), g('metaStart') && g('metaEnd') ? `${g('metaStart')} → ${g('metaEnd')}` : ''].filter(Boolean).join(' · ');
+    if (meta) html += `<div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:14px">${meta}</div>`;
+    if (g('sprintGoal')) html += `<div class="preview-section"><div class="preview-section-title">SPRINT GOAL</div><div class="preview-section-body"><strong>${g('sprintGoal')}</strong></div></div>`;
+    const cap = [g('sprintCapacity') && `Capacity: ${g('sprintCapacity')} pts`, g('sprintSuccess') && `Signal: ${g('sprintSuccess')}`].filter(Boolean).join(' · ');
+    if (cap) html += `<div class="preview-section"><div class="preview-section-title">CAPACITY & SUCCESS SIGNAL</div><div class="preview-section-body">${cap}</div></div>`;
+    const validTasks = sprintRows.filter(r => r.task);
+    if (validTasks.length) {
+      const totalPts = validTasks.reduce((s, r) => s + (parseInt(r.points)||0), 0);
+      html += `<div class="preview-section"><div class="preview-section-title">BACKLOG (${validTasks.length} tasks · ${totalPts} pts)</div><div class="preview-section-body">`;
+      validTasks.forEach(r => {
+        html += `[${r.status.toUpperCase()}] ${r.task}${r.owner ? ` — ${r.owner}` : ''}${r.points ? ` (${r.points}pts)` : ''}<br>`;
+      });
+      html += `</div></div>`;
+    }
+    if (g('carryover')) html += `<div class="preview-section"><div class="preview-section-title">CARRY-OVER</div><div class="preview-section-body">${g('carryover')}</div></div>`;
+    if (g('blockers')) html += `<div class="preview-section"><div class="preview-section-title">BLOCKERS</div><div class="preview-section-body">${g('blockers')}</div></div>`;
+  }
+
+  else if (currentDoc === 'opp') {
+    const title = g('docTitle') || 'Opportunity Brief';
+    html += `<div class="preview-title-area">${title}</div>`;
+    const meta = [g('metaAuthor'), g('metaConfidence')].filter(Boolean).join(' · ');
+    if (meta) html += `<div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:14px">${meta}</div>`;
+    if (g('oppWho')) html += `<div class="preview-section"><div class="preview-section-title">WHO HAS THIS PROBLEM</div><div class="preview-section-body">${g('oppWho')}</div></div>`;
+    if (g('oppWhat')) html += `<div class="preview-section"><div class="preview-section-title">THE PROBLEM</div><div class="preview-section-body">${g('oppWhat')}</div></div>`;
+    const size = [g('oppSize') && `Scale: ${g('oppSize')}`, g('oppEvidence') && `Evidence: ${g('oppEvidence')}`].filter(Boolean).join('<br>');
+    if (size) html += `<div class="preview-section"><div class="preview-section-title">SCALE & EVIDENCE</div><div class="preview-section-body">${size}</div></div>`;
+    if (g('oppStatement')) html += `<div class="preview-section"><div class="preview-section-title">OPPORTUNITY</div><div class="preview-section-body"><strong>${g('oppStatement')}</strong></div></div>`;
+    const biz = [g('oppBizImpact') && `Impact: ${g('oppBizImpact')}`, g('oppStrategic') && `Fit: ${g('oppStrategic')}`].filter(Boolean).join('<br>');
+    if (biz) html += `<div class="preview-section"><div class="preview-section-title">BUSINESS VALUE</div><div class="preview-section-body">${biz}</div></div>`;
+    if (g('oppSolutions')) html += `<div class="preview-section"><div class="preview-section-title">SOLUTION SPACE</div><div class="preview-section-body">${g('oppSolutions')}</div></div>`;
+    if (g('oppValidation')) html += `<div class="preview-section"><div class="preview-section-title">VALIDATION NEEDED</div><div class="preview-section-body">${g('oppValidation')}</div></div>`;
+    if (g('oppWhyNow')) html += `<div class="preview-section"><div class="preview-section-title">WHY NOW</div><div class="preview-section-body">${g('oppWhyNow')}</div></div>`;
+    if (g('oppWhyUs')) html += `<div class="preview-section"><div class="preview-section-title">WHY US</div><div class="preview-section-body">${g('oppWhyUs')}</div></div>`;
+  }
+
+  preview.innerHTML = html || `<div class="preview-empty">Start filling in the form to see your document take shape...</div>`;
+}
+
+// ─── EXPORT ENGINE ────────────────────────────────────────────
+
+// Per-doc export definitions
+const EXPORT_CONFIG = {
+  'user-story': {
+    label: 'User Story',
+    color: 'var(--green)',
+    downloads: [
+      { id:'pdf',  icon:'🖨', bg:'#fceef1', name:'PDF',           desc:'Print-ready document',         badge:'download' },
+      { id:'docx', icon:'📄', bg:'#e8f0fe', name:'Word (.docx)',  desc:'Editable Word document',       badge:'download' },
+      { id:'json', icon:'{ }',bg:'#f0fdf4', name:'JSON',          desc:'Import to Jira / Linear / Asana', badge:'download' },
+    ],
+    tools: [
+      { id:'jira',    icon:'🟦', bg:'#deebff', name:'Jira',          desc:'Open as new issue template',  badge:'open',   url:'https://jira.atlassian.com' },
+      { id:'linear',  icon:'⚫', bg:'#f3f0ff', name:'Linear',         desc:'Paste into new issue',        badge:'copy',   url:'https://linear.app' },
+      { id:'asana',   icon:'🟥', bg:'#fff0f0', name:'Asana',          desc:'Create task from this story', badge:'open',   url:'https://app.asana.com' },
+      { id:'gdoc',    icon:'📝', bg:'#e6f4ea', name:'Google Docs',    desc:'Open and paste content',      badge:'copy',   url:'https://docs.new' },
+    ]
+  },
+  'prd': {
+    label: 'PRD',
+    color: 'var(--slate)',
+    downloads: [
+      { id:'pdf',  icon:'🖨', bg:'#fceef1', name:'PDF',           desc:'Shareable PDF document',       badge:'download' },
+      { id:'docx', icon:'📄', bg:'#e8f0fe', name:'Word (.docx)',  desc:'Editable Word document',       badge:'download' },
+      { id:'json', icon:'{ }',bg:'#f0fdf4', name:'JSON',          desc:'Import to Notion / Confluence', badge:'download' },
+    ],
+    tools: [
+      { id:'notion',     icon:'⬛', bg:'#f4f4f4', name:'Notion',        desc:'Paste into a Notion page',    badge:'copy',   url:'https://notion.so' },
+      { id:'confluence', icon:'🔵', bg:'#deebff', name:'Confluence',    desc:'Create page from template',   badge:'open',   url:'https://confluence.atlassian.com' },
+      { id:'gdoc',       icon:'📝', bg:'#e6f4ea', name:'Google Docs',   desc:'Open new doc and paste',      badge:'copy',   url:'https://docs.new' },
+      { id:'gslides',    icon:'🟧', bg:'#fff3e8', name:'Google Slides', desc:'Present your PRD',            badge:'copy',   url:'https://slides.new' },
+    ]
+  },
+  'roadmap': {
+    label: 'Roadmap',
+    color: 'var(--amber)',
+    downloads: [
+      { id:'pdf',  icon:'🖨', bg:'#fceef1', name:'PDF',           desc:'Shareable roadmap PDF',        badge:'download' },
+      { id:'pptx', icon:'📊', bg:'#fff3e8', name:'PowerPoint',    desc:'Slide deck (.html → pptx)',    badge:'download' },
+      { id:'json', icon:'{ }',bg:'#f0fdf4', name:'JSON',          desc:'Import to Productboard / Miro', badge:'download' },
+    ],
+    tools: [
+      { id:'figjam',      icon:'🎨', bg:'#fff0f6', name:'FigJam',       desc:'Build visual roadmap board',   badge:'open',  url:'https://www.figma.com/figjam/' },
+      { id:'miro',        icon:'🟡', bg:'#fff9e6', name:'Miro',          desc:'Collaborative roadmap board',  badge:'open',  url:'https://miro.com/app/board/new/' },
+      { id:'productboard',icon:'🟣', bg:'#f3f0ff', name:'Productboard',  desc:'Import items to roadmap',     badge:'open',  url:'https://app.productboard.com' },
+      { id:'gslides',     icon:'🟧', bg:'#fff3e8', name:'Google Slides', desc:'Present the roadmap',         badge:'copy',  url:'https://slides.new' },
+    ]
+  },
+  'sprint': {
+    label: 'Sprint Plan',
+    color: 'var(--rose)',
+    downloads: [
+      { id:'pdf',  icon:'🖨', bg:'#fceef1', name:'PDF',           desc:'Printable sprint plan',        badge:'download' },
+      { id:'csv',  icon:'📊', bg:'#e8f5e9', name:'Excel / CSV',   desc:'Task table spreadsheet',       badge:'download' },
+      { id:'json', icon:'{ }',bg:'#f0fdf4', name:'JSON',          desc:'Import to Jira / ADO / Notion', badge:'download' },
+    ],
+    tools: [
+      { id:'jira',    icon:'🟦', bg:'#deebff', name:'Jira Board',     desc:'Set up sprint in Jira',         badge:'open',  url:'https://jira.atlassian.com' },
+      { id:'ado',     icon:'🔷', bg:'#e8f0ff', name:'Azure DevOps',   desc:'Import to ADO sprint board',    badge:'open',  url:'https://dev.azure.com' },
+      { id:'gsheet',  icon:'🟩', bg:'#e6f4ea', name:'Google Sheets',  desc:'Open task list in Sheets',      badge:'copy',  url:'https://sheets.new' },
+      { id:'notion',  icon:'⬛', bg:'#f4f4f4', name:'Notion',         desc:'Paste into sprint board',       badge:'copy',  url:'https://notion.so' },
+    ]
+  },
+  'opp': {
+    label: 'Opportunity Brief',
+    color: 'var(--violet)',
+    downloads: [
+      { id:'pdf',  icon:'🖨', bg:'#fceef1', name:'PDF',           desc:'Shareable brief PDF',          badge:'download' },
+      { id:'docx', icon:'📄', bg:'#e8f0fe', name:'Word (.docx)',  desc:'Editable Word document',       badge:'download' },
+      { id:'json', icon:'{ }',bg:'#f0fdf4', name:'JSON',          desc:'Import to Notion / Slite',     badge:'download' },
+    ],
+    tools: [
+      { id:'notion', icon:'⬛', bg:'#f4f4f4', name:'Notion',       desc:'Paste into Notion page',       badge:'copy',  url:'https://notion.so' },
+      { id:'slite',  icon:'🟦', bg:'#e8f4ff', name:'Slite',        desc:'Create note in Slite',         badge:'open',  url:'https://slite.com' },
+      { id:'gdoc',   icon:'📝', bg:'#e6f4ea', name:'Google Docs',  desc:'Open new doc and paste',       badge:'copy',  url:'https://docs.new' },
+      { id:'loom',   icon:'🟣', bg:'#f3f0ff', name:'Loom',         desc:'Record a walkthrough video',   badge:'open',  url:'https://loom.com/new' },
+    ]
+  },
+  'gantt': {
+    label: 'Gantt Chart',
+    color: '#0d7a72',
+    downloads: [
+      { id:'pdf',  icon:'🖨', bg:'#fceef1', name:'PDF',           desc:'Print-ready Gantt chart',      badge:'download' },
+      { id:'csv',  icon:'📊', bg:'#e8f5e9', name:'Excel / CSV',   desc:'Task data spreadsheet',        badge:'download' },
+      { id:'json', icon:'{ }',bg:'#f0fdf4', name:'JSON',          desc:'Import to GanttPRO / Notion',  badge:'download' },
+    ],
+    tools: [
+      { id:'ganttpro',  icon:'🟦', bg:'#e8f4ff', name:'GanttPRO',     desc:'Import to GanttPRO',            badge:'open',  url:'https://app.ganttpro.com' },
+      { id:'timeline',  icon:'🟩', bg:'#e6f4ea', name:'Timeline View', desc:'Google Sheets timeline',        badge:'copy',  url:'https://sheets.new' },
+      { id:'gsheet',    icon:'🟩', bg:'#e6f4ea', name:'Google Sheets', desc:'Open task data in Sheets',      badge:'copy',  url:'https://sheets.new' },
+      { id:'notion',    icon:'⬛', bg:'#f4f4f4', name:'Notion',        desc:'Paste timeline into Notion',    badge:'copy',  url:'https://notion.so' },
+    ]
+  }
+};
+
+// ── Modal open/close ──────────────────────────────────────────
+function openExportModal() {
+  const config = EXPORT_CONFIG[currentDoc];
+  if (!config) return;
+
+  const titleEl = document.getElementById('docTitle');
+  const docName = (titleEl ? titleEl.value.trim() : '') || config.label;
+
+  const toolRows = config.tools.map(t => `
+    <button class="modal-export-btn" onclick="handleToolExport('${t.id}','${t.url}','${t.badge}');closeExportModal()">
+      <div class="meb-icon" style="background:${t.bg}">${t.icon}</div>
+      <div class="meb-text">
+        <div class="meb-name">${t.name}</div>
+        <div class="meb-desc">${t.desc}</div>
+      </div>
+      <span class="meb-badge ${t.badge}">${t.badge === 'download' ? '⬇ download' : t.badge === 'copy' ? '📋 copy+open' : '↗ open'}</span>
+    </button>`).join('');
+
+  const dlRows = config.downloads.map(d => `
+    <button class="modal-export-btn primary-action" onclick="handleDownloadExport('${d.id}');closeExportModal()">
+      <div class="meb-icon" style="background:${d.bg}">${d.icon}</div>
+      <div class="meb-text">
+        <div class="meb-name">${d.name}</div>
+        <div class="meb-desc">${d.desc}</div>
+      </div>
+      <span class="meb-badge download">⬇ download</span>
+    </button>`).join('');
+
+  const modal = document.createElement('div');
+  modal.className = 'export-modal-overlay';
+  modal.id = 'exportModalOverlay';
+  modal.onclick = (e) => { if (e.target === modal) closeExportModal(); };
+  modal.innerHTML = `
+    <div class="export-modal">
+      <div class="modal-header">
+        <div>
+          <div class="modal-title">Export "${docName}"</div>
+          <div class="modal-subtitle">${config.label} · Choose your format or destination</div>
+        </div>
+        <button class="modal-close" onclick="closeExportModal()">✕</button>
+      </div>
+
+      <div class="modal-section-label" style="margin-bottom:10px">⬇ Download File</div>
+      <div class="modal-btn-grid g${config.downloads.length === 1 ? '1' : '2'}" style="margin-bottom:18px">
+        ${dlRows}
+      </div>
+
+      <div class="modal-section-label" style="margin-bottom:10px">↗ Open in Tool</div>
+      <div class="modal-btn-grid g${config.tools.length > 2 ? '2' : '1'}">
+        ${toolRows}
+      </div>
+    </div>`;
+
+  document.body.appendChild(modal);
+  // trap escape
+  document.addEventListener('keydown', handleModalEsc);
+}
+
+function closeExportModal() {
+  const m = document.getElementById('exportModalOverlay');
+  if (m) m.remove();
+  document.removeEventListener('keydown', handleModalEsc);
+}
+
+function handleModalEsc(e) {
+  if (e.key === 'Escape') closeExportModal();
+}
+
+// ── Download handlers ─────────────────────────────────────────
+function handleDownloadExport(format) {
+  if (format === 'pdf')  exportPDF();
+  else if (format === 'docx') exportDOCX();
+  else if (format === 'csv')  exportCSV();
+  else if (format === 'pptx') exportPPTX();
+  else if (format === 'json') exportJSON();
+}
+
+// ── JSON Export — structured schema per doc type ──────────────
+function exportJSON() {
+  let data = {};
+  const titleEl = document.getElementById('docTitle');
+  const docTitle = (titleEl ? titleEl.value.trim() : '') || currentDoc;
+  const ts = new Date().toISOString();
+
+  if (currentDoc === 'user-story') {
+    data = {
+      schema: 'pm-docstudio/user-story@1.0',
+      exportedAt: ts,
+      metadata: {
+        title:    docTitle,
+        author:   (document.getElementById('metaAuthor')||{}).value || '',
+        epic:     (document.getElementById('metaEpic')||{}).value   || '',
+        sprint:   (document.getElementById('metaSprint')||{}).value || '',
+        priority: selectedPriority,
+        storyPoints: parseInt((document.getElementById('storyPoints')||{}).value) || null,
+      },
+      stories: storyRows.filter(r => r.want).map((r,i) => ({
+        id: `US-${i+1}`,
+        asA:    r.who,
+        iWant:  r.want,
+        soThat: r.so,
+      })),
+      acceptanceCriteria: acceptanceRows.filter(Boolean).map((ac,i) => ({
+        id: `AC-${i+1}`,
+        criterion: ac,
+      })),
+      context: {
+        problemStatement: (document.getElementById('problemStatement')||{}).value || '',
+        successMetric:    (document.getElementById('successMetric')||{}).value    || '',
+        outOfScope:       (document.getElementById('outOfScope')||{}).value       || '',
+        dependencies:     (document.getElementById('dependencies')||{}).value     || '',
+        notes:            (document.getElementById('notes')||{}).value            || '',
+      },
+      // Jira-compatible fields
+      jiraCompatible: {
+        issueType: 'Story',
+        summary:   docTitle,
+        labels:    ['pm-docstudio'],
+        priority:  selectedPriority,
+        description: storyRows.filter(r=>r.want).map(r =>
+          `*As a* ${r.who}, *I want to* ${r.want}, *so that* ${r.so}`).join('\n'),
+        acceptanceCriteria: acceptanceRows.filter(Boolean).join('\n'),
+      }
+    };
+  }
+
+  else if (currentDoc === 'prd') {
+    data = {
+      schema: 'pm-docstudio/prd@1.0',
+      exportedAt: ts,
+      metadata: {
+        title:    docTitle,
+        author:   (document.getElementById('metaAuthor')||{}).value  || '',
+        version:  (document.getElementById('metaVersion')||{}).value || 'v1.0',
+        date:     (document.getElementById('metaDate')||{}).value    || '',
+        status:   (document.getElementById('metaStatus')||{}).value  || 'Draft',
+      },
+      problem: {
+        statement:  (document.getElementById('prdProblem')||{}).value    || '',
+        targetUser: (document.getElementById('prdUser')||{}).value       || '',
+        userImpact: (document.getElementById('prdImpact')||{}).value     || '',
+      },
+      goals: {
+        primaryGoal:      (document.getElementById('prdGoal')||{}).value      || '',
+        northStarMetric:  (document.getElementById('prdNSM')||{}).value       || '',
+        guardrailMetric:  (document.getElementById('prdGuardrail')||{}).value || '',
+        supportingMetrics:(document.getElementById('prdMetrics')||{}).value   || '',
+      },
+      requirements: {
+        functional:    (document.getElementById('prdFunctional')||{}).value    || '',
+        nonFunctional: (document.getElementById('prdNonFunctional')||{}).value || '',
+      },
+      scope: {
+        outOfScope:  (document.getElementById('prdOOS')||{}).value        || '',
+        assumptions: (document.getElementById('prdAssumptions')||{}).value || '',
+      },
+      delivery: {
+        targetLaunch: (document.getElementById('prdLaunch')||{}).value || '',
+        engOwner:     (document.getElementById('prdEng')||{}).value    || '',
+        risks:        (document.getElementById('prdRisks')||{}).value  || '',
+      },
+      // Notion-compatible page properties
+      notionCompatible: {
+        title:  docTitle,
+        status: (document.getElementById('metaStatus')||{}).value || 'Draft',
+        owner:  (document.getElementById('metaAuthor')||{}).value || '',
+        tags:   ['PRD','pm-docstudio'],
+      }
+    };
+  }
+
+  else if (currentDoc === 'roadmap') {
+    const quarters = ['Q1','Q2','Q3','Q4'].map(q => ({
+      quarter: q,
+      theme:  (document.getElementById(`rdm${q}Theme`)||{}).value  || '',
+      items:  (document.getElementById(`rdm${q}Items`)||{}).value  || '',
+      status: (document.getElementById(`rdm${q}Status`)||{}).value || 'Planned',
+    })).filter(q => q.theme);
+    data = {
+      schema: 'pm-docstudio/roadmap@1.0',
+      exportedAt: ts,
+      metadata: {
+        title:  docTitle,
+        team:   (document.getElementById('metaTeam')||{}).value   || '',
+        year:   (document.getElementById('metaYear')||{}).value   || '',
+        author: (document.getElementById('metaAuthor')||{}).value || '',
+      },
+      vision: {
+        statement:     (document.getElementById('rdmVision')||{}).value || '',
+        strategicBets: (document.getElementById('rdmBets')||{}).value   || '',
+      },
+      quarters,
+      okrs: {
+        objective:  (document.getElementById('rdmObj')||{}).value  || '',
+        keyResults: (document.getElementById('rdmKRs')||{}).value  || '',
+      },
+      dependencies: (document.getElementById('rdmDeps')||{}).value  || '',
+      risks:        (document.getElementById('rdmRisks')||{}).value || '',
+      // Productboard-compatible structure
+      productboardCompatible: {
+        initiatives: quarters.map(q => ({
+          name:   `${q.quarter}: ${q.theme}`,
+          status: q.status,
+          description: q.items,
+          timeframe: q.quarter,
+        }))
+      }
+    };
+  }
+
+  else if (currentDoc === 'sprint') {
+    const tasks = sprintRows.filter(r => r.task);
+    const totalPts = tasks.reduce((s,r) => s + (parseInt(r.points)||0), 0);
+    data = {
+      schema: 'pm-docstudio/sprint-plan@1.0',
+      exportedAt: ts,
+      metadata: {
+        title:    docTitle,
+        sprint:   (document.getElementById('metaSprint')||{}).value || '',
+        team:     (document.getElementById('metaTeam')||{}).value   || '',
+        startDate:(document.getElementById('metaStart')||{}).value  || '',
+        endDate:  (document.getElementById('metaEnd')||{}).value    || '',
+        capacity: parseInt((document.getElementById('sprintCapacity')||{}).value) || null,
+      },
+      goal: {
+        statement:     (document.getElementById('sprintGoal')||{}).value    || '',
+        successSignal: (document.getElementById('sprintSuccess')||{}).value || '',
+      },
+      backlog: tasks.map((r,i) => ({
+        id:     `TASK-${i+1}`,
+        title:  r.task,
+        owner:  r.owner,
+        points: parseInt(r.points) || 0,
+        status: r.status,
+      })),
+      summary: {
+        totalTasks:  tasks.length,
+        totalPoints: totalPts,
+        completedPoints: tasks.filter(r=>r.status==='done').reduce((s,r)=>s+(parseInt(r.points)||0),0),
+      },
+      carryover: (document.getElementById('carryover')||{}).value || '',
+      blockers:  (document.getElementById('blockers')||{}).value  || '',
+      // Jira-compatible sprint structure
+      jiraCompatible: {
+        sprintName: (document.getElementById('metaSprint')||{}).value || docTitle,
+        sprintGoal: (document.getElementById('sprintGoal')||{}).value || '',
+        issues: tasks.map((r,i) => ({
+          issueType: 'Task',
+          summary:   r.task,
+          assignee:  r.owner,
+          storyPoints: parseInt(r.points) || 0,
+          status:    r.status === 'todo' ? 'To Do' : r.status === 'in-progress' ? 'In Progress' : r.status === 'done' ? 'Done' : 'Blocked',
+        }))
+      }
+    };
+  }
+
+  else if (currentDoc === 'opp') {
+    data = {
+      schema: 'pm-docstudio/opportunity-brief@1.0',
+      exportedAt: ts,
+      metadata: {
+        title:      docTitle,
+        author:     (document.getElementById('metaAuthor')||{}).value     || '',
+        date:       (document.getElementById('metaDate')||{}).value       || '',
+        confidence: (document.getElementById('metaConfidence')||{}).value || '',
+      },
+      problem: {
+        who:      (document.getElementById('oppWho')||{}).value      || '',
+        what:     (document.getElementById('oppWhat')||{}).value     || '',
+        scale:    (document.getElementById('oppSize')||{}).value     || '',
+        evidence: (document.getElementById('oppEvidence')||{}).value || '',
+      },
+      opportunity: {
+        statement:    (document.getElementById('oppStatement')||{}).value  || '',
+        businessImpact:(document.getElementById('oppBizImpact')||{}).value || '',
+        strategicFit: (document.getElementById('oppStrategic')||{}).value  || '',
+      },
+      solutionSpace: {
+        approaches:  (document.getElementById('oppSolutions')||{}).value  || '',
+        validation:  (document.getElementById('oppValidation')||{}).value || '',
+      },
+      timing: {
+        whyNow: (document.getElementById('oppWhyNow')||{}).value || '',
+        whyUs:  (document.getElementById('oppWhyUs')||{}).value  || '',
+      },
+      // Notion-compatible
+      notionCompatible: {
+        title:      docTitle,
+        confidence: (document.getElementById('metaConfidence')||{}).value || '',
+        owner:      (document.getElementById('metaAuthor')||{}).value     || '',
+        tags:       ['Opportunity','pm-docstudio'],
+      }
+    };
+  }
+
+  else if (currentDoc === 'gantt') {
+    const statusLabels = { notstarted:'Not Started', inprogress:'In Progress', done:'Done', atrisk:'At Risk', blocked:'Blocked' };
+    data = {
+      schema: 'pm-docstudio/gantt@1.0',
+      exportedAt: ts,
+      metadata: {
+        title:     docTitle,
+        author:    (document.getElementById('ganttAuthor')||{}).value    || '',
+        startDate: (document.getElementById('ganttStartDate')||{}).value || '',
+        weeks:     ganttWeeks,
+        todayWeek: ganttTodayWeek,
+      },
+      tasks: ganttTasks.map((t,i) => ({
+        id:       `T-${i+1}`,
+        name:     t.name,
+        owner:    t.owner,
+        startWeek:t.start,
+        endWeek:  t.start + t.dur - 1,
+        duration: t.dur,
+        status:   statusLabels[t.status] || t.status,
+        statusCode: t.status,
+        progress: t.pct,
+        color:    t.color,
+      })),
+      summary: {
+        totalTasks:   ganttTasks.length,
+        completed:    ganttTasks.filter(t=>t.status==='done').length,
+        inProgress:   ganttTasks.filter(t=>t.status==='inprogress').length,
+        atRiskBlocked:ganttTasks.filter(t=>t.status==='atrisk'||t.status==='blocked').length,
+        avgProgress:  ganttTasks.length ? Math.round(ganttTasks.reduce((s,t)=>s+t.pct,0)/ganttTasks.length) : 0,
+      },
+      // GanttPRO-compatible structure
+      ganttProCompatible: {
+        tasks: ganttTasks.map((t,i) => ({
+          id:        i+1,
+          text:      t.name,
+          start_date:`Week ${t.start}`,
+          duration:  t.dur,
+          progress:  t.pct / 100,
+          owner:     t.owner,
+        }))
+      }
+    };
+  }
+
+  const json = JSON.stringify(data, null, 2);
+  downloadFile(getFilename('json'), json, 'application/json;charset=utf-8;');
+  showToast(`✓ JSON exported — importable to ${EXPORT_CONFIG[currentDoc]?.label || 'your tools'}!`);
+}
+
+// PDF — opens clean print-ready window
+function exportPDF() {
+  const titleEl = document.getElementById('docTitle');
+  const title = (titleEl ? titleEl.value.trim() : '') || currentDoc;
+  const printWin = window.open('', '_blank');
+  if (!printWin) { showToast('⚠ Pop-up blocked — please allow pop-ups'); return; }
+  printWin.document.write(buildPrintHTML(title));
+  printWin.document.close();
+  printWin.onload = () => { printWin.focus(); printWin.print(); };
+  showToast('🖨 Print dialog opened — choose "Save as PDF"');
+}
+
+// DOCX — generates a proper RTF file that Word opens natively
+function exportDOCX() {
+  const titleEl = document.getElementById('docTitle');
+  const title = (titleEl ? titleEl.value.trim() : '') || currentDoc;
+  const bodyContent = buildDocxRTFBody();
+  // RTF format — opens in Word, Pages, LibreOffice
+  const rtf = `{\\rtf1\\ansi\\deff0
+{\\fonttbl{\\f0\\froman\\fcharset0 Times New Roman;}{\\f1\\fswiss\\fcharset0 Calibri;}{\\f2\\fmodern\\fcharset0 Courier New;}}
+{\\colortbl;\\red24\\green20\\blue15;\\red156\\green144\\blue133;\\red30\\green122\\blue90;}
+\\paperw12240\\paperh15840\\margl1800\\margr1800\\margt1440\\margb1440
+${bodyContent}
+}`;
+  downloadFile(getFilename('rtf'), rtf, 'application/rtf');
+  showToast('✓ Word document downloaded! Open in Word or Google Docs.');
+}
+
+// Build RTF body from preview
+function buildDocxRTFBody() {
+  if (currentDoc === 'gantt') {
+    const titleEl = document.getElementById('docTitle');
+    const title = (titleEl ? titleEl.value.trim() : '') || 'Gantt Chart';
+    const statusLabels = { notstarted:'Not Started', inprogress:'In Progress', done:'Done', atrisk:'At Risk', blocked:'Blocked' };
+    let rtf = `\\f1\\fs40\\b ${escRTF(title)}\\b0\\par\\pard\\par`;
+    rtf += `\\f2\\fs18\\cf2 TASK TIMELINE\\cf1\\par\\pard`;
+    rtf += `\\trowd\\trgaph108\\cellx2880\\cellx4320\\cellx5400\\cellx6480\\cellx7920\\cellx8640\n`;
+    rtf += `\\b Task\\cell Owner\\cell Start\\cell Duration\\cell Status\\cell Done\\cell\\b0\\row\n`;
+    ganttTasks.forEach(t => {
+      rtf += `\\trowd\\trgaph108\\cellx2880\\cellx4320\\cellx5400\\cellx6480\\cellx7920\\cellx8640\n`;
+      rtf += `${escRTF(t.name)}\\cell ${escRTF(t.owner)}\\cell Wk ${t.start}\\cell ${t.dur}w\\cell ${statusLabels[t.status]||t.status}\\cell ${t.pct}%\\cell\\row\n`;
+    });
+    rtf += `\\pard\\par`;
+    return rtf;
+  }
+
+  const preview = document.getElementById('previewDoc');
+  if (!preview) return '\\f1\\fs24 No content yet.\\par';
+  let rtf = '';
+  const titleEl2 = preview.querySelector('.preview-title-area');
+  if (titleEl2) rtf += `\\f1\\fs40\\b ${escRTF(titleEl2.innerText.trim())}\\b0\\par\\pard\\par\n`;
+  const metaEl = preview.querySelector('[style*="IBM Plex Mono"]');
+  if (metaEl) rtf += `\\f2\\fs18\\cf2 ${escRTF(metaEl.innerText.trim())}\\cf1\\par\\pard\\par\n`;
+  preview.querySelectorAll('.preview-section').forEach(sec => {
+    const heading = sec.querySelector('.preview-section-title');
+    const body    = sec.querySelector('.preview-section-body');
+    if (heading) rtf += `\\f2\\fs18\\cf2 ${escRTF(heading.innerText.trim())}\\cf1\\par\\pard\n`;
+    if (body) {
+      const lines = body.innerText.trim().split('\n');
+      lines.forEach(line => {
+        if (line.trim()) rtf += `\\f1\\fs24 ${escRTF(line.trim())}\\par\n`;
+      });
+      rtf += `\\par\n`;
+    }
+  });
+  return rtf || '\\f1\\fs24 No content yet.\\par';
+}
+
+function escRTF(str) {
+  return (str || '').replace(/\\/g,'\\\\').replace(/\{/g,'\\{').replace(/\}/g,'\\}')
+    .replace(/[^\x00-\x7F]/g, c => `\\u${c.charCodeAt(0)}?`);
+}
+
+// CSV — sprint tasks or gantt tasks
+function exportCSV() {
+  let content = '';
+  if (currentDoc === 'gantt') {
+    const header = 'Task,Owner,Start Week,Duration (wks),End Week,Status,% Done\n';
+    const rows = ganttTasks.map(t => {
+      const statusLabels = { notstarted:'Not Started', inprogress:'In Progress', done:'Done', atrisk:'At Risk', blocked:'Blocked' };
+      return `"${t.name}","${t.owner}",${t.start},${t.dur},${t.start+t.dur-1},"${statusLabels[t.status]||t.status}",${t.pct}%`;
+    }).join('\n');
+    content = header + rows;
+    showToast('✓ Gantt exported as Excel/CSV!');
+  } else if (currentDoc === 'sprint') {
+    content = 'Task,Owner,Story Points,Status\n';
+    content += sprintRows.filter(r=>r.task).map(r =>
+      `"${r.task}","${r.owner}",${r.points},"${r.status}"`).join('\n');
+    const goal = (document.getElementById('sprintGoal')||{}).value||'';
+    if (goal) content = `Sprint Goal,"${goal}"\n\n` + content;
+    showToast('✓ Sprint plan exported as Excel/CSV!');
+  }
+  if (content) downloadFile(getFilename('csv'), content, 'text/csv;charset=utf-8;');
+}
+
+// PPTX — exports as a clean HTML slide deck (opens in browser, printable as PPTX-like)
+function exportPPTX() {
+  const titleEl = document.getElementById('docTitle');
+  const title = (titleEl ? titleEl.value.trim() : '') || 'Roadmap';
+  const html = buildSlideDeckHTML(title);
+  downloadFile(getFilename('html'), html, 'text/html;charset=utf-8;');
+  showToast('✓ Slide deck downloaded! Open in browser, then File → Print → Save PDF, or paste into PowerPoint.');
+}
+
+function buildSlideDeckHTML(title) {
+  const slides = [];
+  // Title slide
+  const team = (document.getElementById('metaTeam')||{}).value || '';
+  const yr   = (document.getElementById('metaYear')||{}).value || '';
+  slides.push(`<div class="slide title-slide"><div class="slide-inner"><div class="slide-eyebrow">Product Roadmap</div><h1>${title}</h1><p class="slide-meta">${[team,yr].filter(Boolean).join(' · ')}</p></div></div>`);
+  // Vision slide
+  const vision = (document.getElementById('rdmVision')||{}).value||'';
+  const bets   = (document.getElementById('rdmBets')||{}).value||'';
+  if (vision||bets) slides.push(`<div class="slide"><div class="slide-inner"><div class="slide-label">Vision & Strategy</div><h2>${vision||'Our Vision'}</h2>${bets?`<ul>${bets.split('\n').filter(Boolean).map(b=>`<li>${b.trim()}</li>`).join('')}</ul>`:''}</div></div>`);
+  // Q slides
+  ['Q1','Q2','Q3','Q4'].forEach(q => {
+    const theme = (document.getElementById(`rdm${q}Theme`)||{}).value||'';
+    const items = (document.getElementById(`rdm${q}Items`)||{}).value||'';
+    const status= (document.getElementById(`rdm${q}Status`)||{}).value||'Planned';
+    if (theme) slides.push(`<div class="slide"><div class="slide-inner"><div class="slide-label">${q} · ${status}</div><h2>${theme}</h2>${items?`<ul>${items.split(/[,\n]/).filter(Boolean).map(i=>`<li>${i.trim()}</li>`).join('')}</ul>`:''}</div></div>`);
+  });
+  // OKR slide
+  const obj = (document.getElementById('rdmObj')||{}).value||'';
+  const krs  = (document.getElementById('rdmKRs')||{}).value||'';
+  if (obj||krs) slides.push(`<div class="slide"><div class="slide-inner"><div class="slide-label">OKRs</div><h2>${obj}</h2>${krs?`<ul>${krs.split('\n').filter(Boolean).map(k=>`<li>${k.trim()}</li>`).join('')}</ul>`:''}</div></div>`);
+
+  return `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${title}</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@700&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Outfit',sans-serif;background:#111;display:flex;flex-direction:column;gap:0;align-items:center;padding:40px 20px}
+.slide{width:960px;height:540px;background:#faf8f5;border-radius:12px;margin-bottom:24px;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 32px rgba(0,0,0,0.4);overflow:hidden;position:relative}
+.slide::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 80% 20%,rgba(30,122,90,0.06),transparent 60%)}
+.slide-inner{padding:60px 72px;width:100%}
+.title-slide{background:linear-gradient(135deg,#18140f 60%,#2a2010)}
+.title-slide h1{font-family:'Fraunces',serif;font-size:52px;font-weight:700;color:#f0ece6;letter-spacing:-0.02em;line-height:1.1;margin:12px 0}
+.title-slide .slide-eyebrow{font-family:'Courier New',monospace;font-size:11px;letter-spacing:0.2em;text-transform:uppercase;color:#9c9085;margin-bottom:8px}
+.title-slide .slide-meta{font-size:16px;color:#6a6258;margin-top:16px}
+.slide-label{font-family:'Courier New',monospace;font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:#9c9085;border-bottom:1.5px solid #e0dbd3;padding-bottom:10px;margin-bottom:20px}
+h2{font-family:'Fraunces',serif;font-size:34px;font-weight:700;color:#18140f;letter-spacing:-0.02em;line-height:1.15;margin-bottom:20px}
+ul{list-style:none;display:flex;flex-direction:column;gap:10px}
+li{font-size:15px;color:#3b3428;display:flex;align-items:flex-start;gap:10px;line-height:1.5}
+li::before{content:'→';color:#1e7a5a;font-weight:600;flex-shrink:0;margin-top:1px}
+@media print{body{background:white;padding:0}
+.slide{page-break-after:always;margin:0;border-radius:0;width:100vw;height:100vh;box-shadow:none}}
+</style></head><body>${slides.join('')}</body></html>`;
+}
+
+// ── Tool open handlers ────────────────────────────────────────
+function handleToolExport(toolId, url, badge) {
+  // For copy+open tools: copy content then open the tool
+  if (badge === 'copy') {
+    const text = currentDoc === 'gantt' ? buildGanttTextSummary() : getPreviewText();
+    if (text.trim()) {
+      navigator.clipboard.writeText(text).then(() => {
+        showToast(`📋 Content copied! Opening ${toolId}…`);
+        setTimeout(() => window.open(url, '_blank'), 600);
+      }).catch(() => { window.open(url, '_blank'); });
+    } else {
+      showToast('Fill in some fields first!');
+    }
+    return;
+  }
+  // For open tools: just open the URL
+  window.open(url, '_blank');
+  showToast(`↗ Opening ${toolId}…`);
+}
+
+// ── Helpers ───────────────────────────────────────────────────
+function downloadFile(filename, content, mimeType) {
+  const blob = new Blob([content], { type: mimeType });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function getFilename(ext) {
+  const titleEl = document.getElementById('docTitle');
+  const raw = titleEl ? titleEl.value.trim() : '';
+  const safe = raw.replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '').toLowerCase() || currentDoc;
+  return `${safe}.${ext}`;
+}
+
+function getPreviewText() {
+  const preview = document.getElementById('previewDoc');
+  return preview ? preview.innerText.trim() : '';
+}
+
+function buildGanttTextSummary() {
+  const titleEl = document.getElementById('docTitle');
+  const title = (titleEl ? titleEl.value.trim() : '') || 'Gantt Chart';
+  const statusLabels = { notstarted:'Not Started', inprogress:'In Progress', done:'Done', atrisk:'At Risk', blocked:'Blocked' };
+  let text = `${title}\n${'─'.repeat(title.length)}\n\n`;
+  text += `TASK TIMELINE\n`;
+  ganttTasks.forEach(t => {
+    text += `• ${t.name||'—'} (${t.owner||'—'}) — Wk ${t.start}, ${t.dur}w — ${statusLabels[t.status]||t.status} — ${t.pct}%\n`;
+  });
+  text += `\nTimeline: ${ganttWeeks} weeks`;
+  return text;
+}
+
+function buildPrintHTML(title) {
+  const statusLabels = { notstarted:'Not Started', inprogress:'In Progress', done:'Done', atrisk:'At Risk', blocked:'Blocked' };
+  let bodyHtml = '';
+  if (currentDoc === 'gantt') {
+    const author = (document.getElementById('ganttAuthor')||{}).value||'';
+    const sd = (document.getElementById('ganttStartDate')||{}).value||'';
+    bodyHtml = `<h1>${title}</h1>`;
+    if (author||sd) bodyHtml += `<p class="meta">${[author,sd,`${ganttWeeks} weeks`].filter(Boolean).join(' · ')}</p>`;
+    bodyHtml += `<h2>TASK TIMELINE</h2><table><thead><tr><th>Task</th><th>Owner</th><th>Start</th><th>Duration</th><th>Status</th><th>%</th></tr></thead><tbody>`;
+    ganttTasks.forEach(t => {
+      bodyHtml += `<tr><td><strong>${t.name||'—'}</strong></td><td>${t.owner||'—'}</td><td>Wk ${t.start}</td><td>${t.dur}w</td><td>${statusLabels[t.status]||t.status}</td><td>${t.pct}%</td></tr>`;
+    });
+    bodyHtml += `</tbody></table>`;
+  } else {
+    const preview = document.getElementById('previewDoc');
+    if (preview) {
+      const t2 = preview.querySelector('.preview-title-area');
+      if (t2) bodyHtml += `<h1>${t2.innerText.trim()}</h1>`;
+      const m2 = preview.querySelector('[style*="IBM Plex Mono"]');
+      if (m2) bodyHtml += `<p class="meta">${m2.innerText.trim()}</p>`;
+      preview.querySelectorAll('.preview-section').forEach(sec => {
+        const h = sec.querySelector('.preview-section-title');
+        const b = sec.querySelector('.preview-section-body');
+        if (h) bodyHtml += `<h2>${h.innerText.trim()}</h2>`;
+        if (b) bodyHtml += `<p>${b.innerHTML.replace(/<br\s*\/?>/gi,'<br>').replace(/<[^>]+>/g,'')}</p>`;
+      });
+    }
+  }
+  return `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${title}</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@700&family=Outfit:wght@400;500;600&family=IBM+Plex+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Outfit',sans-serif;background:#fff;color:#18140f;padding:40px 48px;max-width:800px;margin:0 auto}
+h1{font-family:'Fraunces',serif;font-size:32px;font-weight:700;letter-spacing:-0.02em;margin-bottom:6px;line-height:1.15}
+h2{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:#9c9085;margin:24px 0 6px;padding-bottom:6px;border-bottom:1px solid #e0dbd3}
+p{font-size:13.5px;line-height:1.75;color:#3b3428;margin-bottom:4px}
+.meta{font-family:'IBM Plex Mono',monospace;font-size:10px;color:#9c9085;margin-bottom:28px;padding-bottom:16px;border-bottom:1.5px solid #e0dbd3;letter-spacing:0.06em}
+table{width:100%;border-collapse:collapse;font-size:12px;margin:10px 0}
+th{font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:0.14em;text-transform:uppercase;color:#9c9085;text-align:left;padding:6px 8px;border-bottom:1.5px solid #e0dbd3}
+td{padding:7px 8px;border-bottom:1px solid #e0dbd3;color:#3b3428}
+@media print{body{padding:24px 32px}@page{margin:1.5cm}}
+</style></head><body>${bodyHtml}</body></html>`;
+}
+
+// Clipboard copy
+function copyDocument() {
+  const text = currentDoc === 'gantt' ? buildGanttTextSummary() : getPreviewText();
+  if (!text.trim()) { showToast('Nothing to copy yet — fill in some fields first!'); return; }
+  navigator.clipboard.writeText(text).then(() => showToast('✓ Copied to clipboard!'));
+}
+
+// Keep syncExportButtons as no-op (modal handles all now)
+function syncExportButtons() {}
+
+function clearDoc() {
+  switchDoc(currentDoc, null, null);
+  showToast('🗑 Document cleared');
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// ─── INIT ─────────────────────────────────────────────────────
+switchDoc('user-story');
+syncExportButtons();
+</script>
+</body>
+</html>
