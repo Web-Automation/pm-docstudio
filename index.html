@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PM DocStudio: Document Workspace</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500;600&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500;600&family=Manrope:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 /* ═══════════════════════════════════════════════
    PM DOCSTUDIO — 2026 DESIGN SYSTEM
@@ -28,8 +28,8 @@
   /* ── Text ── */
   --text-primary:   #f0f2fa;
   --text-secondary: #9ba3c4;
-  --text-muted:     #525a7a;
-  --text-disabled:  #363d5a;
+  --text-muted:     #5a6480;
+  --text-disabled:  #4a5270;
 
   /* ── Borders ── */
   --border:    rgba(255,255,255,0.07);
@@ -1233,137 +1233,330 @@ body::after {
   border: none;
 }
 
-/* ══════════════════════════════════
-   INPUT VISIBILITY FIXES (Dark Theme)
-══════════════════════════════════ */
+/* ══════════════════════════════════════════════════════════════
+   BODY VISIBILITY SYSTEM — Dark Theme Typography & Input Design
+   Hierarchy: Section Labels > Field Labels > Meta Labels > Hints
+══════════════════════════════════════════════════════════════ */
 
-/* Field labels — brighter, more readable */
-.field-label {
-  color: #c4b5fd !important;
-  font-size: 10px !important;
-  letter-spacing: 0.14em !important;
-  opacity: 1 !important;
-}
-.field-label .req { color: var(--rose) !important; }
-
-/* Meta field labels */
-.meta-field label {
-  color: #c4b5fd !important;
-  font-size: 10px !important;
+/* ── 1. DOC TYPE TAG (top pill: "📝 USER STORY") ── */
+.doc-type-tag {
+  font-family: 'Manrope', sans-serif !important;
+  font-size: 11px !important;
   font-weight: 700 !important;
-  letter-spacing: 0.14em !important;
+  letter-spacing: 0.08em !important;
+  color: #e0e7ff !important;
+  background: rgba(99,102,241,0.18) !important;
+  border: 1px solid rgba(99,102,241,0.35) !important;
+  padding: 5px 14px !important;
 }
 
-/* Input & textarea — visible background and border */
-.field-input, .field-textarea {
-  background: rgba(28, 32, 48, 0.95) !important;
-  border: 1px solid rgba(255,255,255,0.18) !important;
-  color: #f0f2fa !important;
-  border-radius: var(--r-sm) !important;
-}
-.field-input:focus, .field-textarea:focus {
-  background: rgba(34, 40, 64, 0.98) !important;
-  border-color: var(--accent) !important;
-  box-shadow: 0 0 0 3px rgba(99,102,241,0.15) !important;
-  color: #ffffff !important;
-}
-.field-input::placeholder, .field-textarea::placeholder {
-  color: rgba(155,163,196,0.6) !important;
-}
-
-/* Meta inputs (Author, Epic, Sprint) */
-.meta-field input, .meta-field select {
-  background: rgba(28, 32, 48, 0.8) !important;
-  border: none !important;
-  border-bottom: 1px solid rgba(255,255,255,0.2) !important;
-  color: #f0f2fa !important;
-  padding: 5px 6px !important;
-  border-radius: var(--r-xs) var(--r-xs) 0 0 !important;
-}
-.meta-field input:focus, .meta-field select:focus {
-  border-bottom-color: var(--accent) !important;
-  background: rgba(34, 40, 64, 0.9) !important;
-}
-.meta-field input::placeholder {
-  color: rgba(155,163,196,0.5) !important;
-}
-
-/* Doc title input */
+/* ── 2. DOC TITLE (big h1 input) ── */
 .doc-title-input {
-  color: #f0f2fa !important;
+  color: #f4f6ff !important;
+  font-size: 32px !important;
 }
 .doc-title-input::placeholder {
-  color: rgba(155,163,196,0.45) !important;
+  color: rgba(148,155,196,0.5) !important;
 }
 
-/* Form section cards — more visible */
+/* ── 3. META ROW LABELS (Author / Epic / Sprint / Status) ── */
+.meta-field label {
+  font-family: 'Manrope', sans-serif !important;
+  font-size: 10.5px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.1em !important;
+  text-transform: uppercase !important;
+  color: #94a3d8 !important;          /* slate-blue — readable but not loud */
+}
+
+/* Meta inputs — underline style, clearly readable */
+.meta-field input,
+.meta-field select {
+  font-family: 'Inter', sans-serif !important;
+  font-size: 13.5px !important;
+  font-weight: 500 !important;
+  color: #e8ecff !important;
+  background: transparent !important;
+  border: none !important;
+  border-bottom: 1.5px solid rgba(148,163,184,0.3) !important;
+  padding: 5px 2px !important;
+  min-width: 120px !important;
+  border-radius: 0 !important;
+  transition: border-color 0.18s !important;
+}
+.meta-field input:focus,
+.meta-field select:focus {
+  border-bottom-color: #818cf8 !important;
+  outline: none !important;
+}
+.meta-field input::placeholder {
+  color: rgba(148,163,184,0.45) !important;
+  font-style: italic !important;
+}
+.meta-field select option { background: #1c2030; color: #e8ecff; }
+
+/* ── 4. FORM SECTION CARDS ── */
 .form-section {
-  background: rgba(22, 26, 36, 0.95) !important;
-  border: 1px solid rgba(255,255,255,0.1) !important;
+  background: #13172080 !important;
+  border: 1px solid rgba(255,255,255,0.09) !important;
+  backdrop-filter: blur(4px) !important;
 }
 .form-section:focus-within {
-  border-color: rgba(99,102,241,0.45) !important;
-  box-shadow: 0 0 0 3px rgba(99,102,241,0.08) !important;
+  border-color: rgba(99,102,241,0.4) !important;
+  box-shadow: 0 0 0 3px rgba(99,102,241,0.07), 0 4px 24px rgba(0,0,0,0.3) !important;
 }
 
-/* Section head title — brighter */
+/* ── 5. SECTION ACCORDION HEADER ── */
 .section-head-title {
-  color: #f0f2fa !important;
+  font-family: 'Manrope', sans-serif !important;
+  font-size: 14px !important;
+  font-weight: 800 !important;
+  color: #dde4ff !important;
+  letter-spacing: -0.01em !important;
 }
 .section-head-desc {
-  color: var(--text-secondary) !important;
+  font-family: 'Inter', sans-serif !important;
+  font-size: 11.5px !important;
+  font-weight: 400 !important;
+  color: #7a849e !important;
+  margin-top: 3px !important;
+}
+.section-required {
+  font-family: 'Manrope', sans-serif !important;
+  font-size: 9.5px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.06em !important;
+  color: #fbbf24 !important;
+  background: rgba(251,191,36,0.1) !important;
+  border-color: rgba(251,191,36,0.25) !important;
+}
+.section-optional {
+  font-family: 'Manrope', sans-serif !important;
+  font-size: 9.5px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.04em !important;
+  color: #525a7a !important;
 }
 
-/* Story row inputs */
+/* ── 6. FIELD LABELS (Problem Statement, Success Metric…) ── */
+.field-label {
+  font-family: 'Manrope', sans-serif !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.06em !important;
+  text-transform: uppercase !important;
+  color: #a5b4fc !important;          /* soft indigo — clearly a label */
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  margin-bottom: 2px !important;
+}
+.field-label .req {
+  color: #fb7185 !important;
+  font-size: 13px !important;
+  font-weight: 800 !important;
+  line-height: 1 !important;
+}
+
+/* ── 7. FIELD INPUTS & TEXTAREAS ── */
+.field-input,
+.field-textarea {
+  font-family: 'Inter', sans-serif !important;
+  font-size: 14px !important;
+  font-weight: 400 !important;
+  color: #edf0ff !important;
+  background: rgba(20, 24, 38, 0.85) !important;
+  border: 1.5px solid rgba(255,255,255,0.12) !important;
+  border-radius: 8px !important;
+  padding: 11px 14px !important;
+  line-height: 1.6 !important;
+  transition: border-color 0.18s, box-shadow 0.18s, background 0.18s !important;
+  outline: none !important;
+  width: 100% !important;
+}
+.field-input:hover,
+.field-textarea:hover {
+  border-color: rgba(255,255,255,0.2) !important;
+}
+.field-input:focus,
+.field-textarea:focus {
+  background: rgba(26, 30, 52, 0.95) !important;
+  border-color: #6366f1 !important;
+  box-shadow: 0 0 0 3px rgba(99,102,241,0.14),
+              inset 0 1px 0 rgba(255,255,255,0.04) !important;
+  color: #ffffff !important;
+}
+.field-input::placeholder,
+.field-textarea::placeholder {
+  font-style: italic !important;
+  color: rgba(130,140,180,0.55) !important;
+  font-size: 13px !important;
+}
+.field-textarea { resize: vertical; min-height: 92px; }
+
+/* ── 8. FIELD HINTS ── */
+.field-hint {
+  font-family: 'Inter', sans-serif !important;
+  font-size: 11.5px !important;
+  font-style: normal !important;
+  font-weight: 400 !important;
+  color: #5a6480 !important;
+  line-height: 1.6 !important;
+  display: flex !important;
+  align-items: flex-start !important;
+  gap: 5px !important;
+  padding: 2px 0 !important;
+}
+.field-hint::before {
+  content: '💡';
+  font-size: 10px;
+  margin-top: 1px;
+  flex-shrink: 0;
+}
+
+/* ── 9. STORY ROWS (As a / I want / So that) ── */
 .story-row {
-  background: rgba(28, 32, 48, 0.95) !important;
-  border: 1px solid rgba(255,255,255,0.14) !important;
+  background: rgba(20, 24, 38, 0.85) !important;
+  border: 1.5px solid rgba(255,255,255,0.1) !important;
+  border-radius: 8px !important;
+}
+.story-row:focus-within {
+  border-color: #6366f1 !important;
+  box-shadow: 0 0 0 2px rgba(99,102,241,0.12) !important;
 }
 .story-row input {
-  color: #f0f2fa !important;
+  font-family: 'Inter', sans-serif !important;
+  font-size: 13.5px !important;
+  font-weight: 400 !important;
+  color: #edf0ff !important;
 }
 .story-row input::placeholder {
-  color: rgba(155,163,196,0.5) !important;
+  color: rgba(130,140,180,0.5) !important;
+  font-style: italic !important;
 }
 .story-connector {
-  color: rgba(155,163,196,0.7) !important;
-  background: rgba(255,255,255,0.04) !important;
-  border-left-color: rgba(255,255,255,0.1) !important;
-  border-right-color: rgba(255,255,255,0.1) !important;
+  font-family: 'Manrope', sans-serif !important;
+  font-size: 9.5px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.12em !important;
+  text-transform: uppercase !important;
+  color: #6366f1 !important;
+  background: rgba(99,102,241,0.08) !important;
+  border-left: 1px solid rgba(99,102,241,0.2) !important;
+  border-right: 1px solid rgba(99,102,241,0.2) !important;
+  padding: 0 12px !important;
+  white-space: nowrap !important;
+  height: 100% !important;
+  display: flex !important;
+  align-items: center !important;
 }
 
-/* Sprint table inputs */
-.sprint-table td input, .sprint-table td select {
-  color: #f0f2fa !important;
+/* ── 10. SPRINT TABLE ── */
+.sprint-table th {
+  font-family: 'Manrope', sans-serif !important;
+  font-size: 10px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.1em !important;
+  text-transform: uppercase !important;
+  color: #7c87b0 !important;
+  padding: 10px 12px !important;
+  border-bottom: 1px solid rgba(255,255,255,0.08) !important;
+}
+.sprint-table td {
+  padding: 10px 12px !important;
+  border-bottom: 1px solid rgba(255,255,255,0.05) !important;
+}
+.sprint-table td input,
+.sprint-table td select {
+  font-family: 'Inter', sans-serif !important;
+  font-size: 13.5px !important;
+  font-weight: 400 !important;
+  color: #edf0ff !important;
+  background: transparent !important;
 }
 .sprint-table td input::placeholder {
-  color: rgba(155,163,196,0.5) !important;
+  color: rgba(130,140,180,0.5) !important;
+  font-style: italic !important;
+}
+.sprint-table td select option { background: #1c2030; color: #edf0ff; }
+.sprint-table tr:hover td {
+  background: rgba(99,102,241,0.04) !important;
 }
 
-/* Roadmap item inputs */
+/* ── 11. ROADMAP ITEMS ── */
 .roadmap-item {
-  background: rgba(28, 32, 48, 0.95) !important;
-  border: 1px solid rgba(255,255,255,0.12) !important;
+  background: rgba(20, 24, 38, 0.75) !important;
+  border: 1.5px solid rgba(255,255,255,0.09) !important;
 }
-.roadmap-item-input {
-  color: #f0f2fa !important;
-}
-.roadmap-item-input::placeholder {
-  color: rgba(155,163,196,0.5) !important;
+.roadmap-item:focus-within {
+  border-color: rgba(99,102,241,0.4) !important;
 }
 .roadmap-quarter-label {
-  color: var(--accent-lt) !important;
-  font-weight: 600 !important;
+  font-family: 'Manrope', sans-serif !important;
+  font-size: 10px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.14em !important;
+  text-transform: uppercase !important;
+  color: #818cf8 !important;
+}
+.roadmap-item-input {
+  font-family: 'Inter', sans-serif !important;
+  font-size: 13.5px !important;
+  color: #edf0ff !important;
+}
+.roadmap-item-input::placeholder {
+  color: rgba(130,140,180,0.5) !important;
+  font-style: italic !important;
 }
 
-/* Gantt editor inputs */
-.gantt-editor-row input, .gantt-editor-row select {
-  color: #f0f2fa !important;
-  background: rgba(28,32,48,0.9) !important;
-  border-color: rgba(255,255,255,0.16) !important;
+/* ── 12. GANTT EDITOR ── */
+.gantt-editor-row input,
+.gantt-editor-row select {
+  font-family: 'Inter', sans-serif !important;
+  font-size: 13px !important;
+  font-weight: 400 !important;
+  color: #edf0ff !important;
+  background: rgba(20, 24, 38, 0.85) !important;
+  border: 1.5px solid rgba(255,255,255,0.13) !important;
+  border-radius: 6px !important;
+}
+.gantt-editor-row input:focus,
+.gantt-editor-row select:focus {
+  border-color: #6366f1 !important;
+  background: rgba(26, 30, 52, 0.95) !important;
+  outline: none !important;
 }
 .gantt-editor-row input::placeholder {
-  color: rgba(155,163,196,0.5) !important;
+  color: rgba(130,140,180,0.5) !important;
+  font-style: italic !important;
+}
+.gantt-editor-row select option { background: #1c2030; color: #edf0ff; }
+
+/* ── 13. SECTION BODY divider line color ── */
+.section-head.open {
+  border-bottom-color: rgba(255,255,255,0.07) !important;
+}
+
+/* ── 14. ADD ROW BUTTON ── */
+.add-row-btn {
+  font-family: 'Manrope', sans-serif !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  color: #818cf8 !important;
+  border-color: rgba(99,102,241,0.25) !important;
+  letter-spacing: 0.02em !important;
+}
+.add-row-btn:hover {
+  background: rgba(99,102,241,0.1) !important;
+  border-color: #6366f1 !important;
+  color: #a5b4fc !important;
+}
+
+/* ── 15. DOC META ROW separator ── */
+.doc-meta-row {
+  border-top-color: rgba(255,255,255,0.08) !important;
+  padding-top: 18px !important;
+  margin-top: 18px !important;
 }
 </style>
 </head>
