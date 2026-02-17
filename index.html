@@ -205,6 +205,7 @@ body::after {
   z-index: 1;
   display: grid;
   grid-template-columns: var(--sidebar-w) 1fr var(--sidebar-w);
+  transition: grid-template-columns 0.3s cubic-bezier(0.4,0,0.2,1);
 }
 
 
@@ -1061,7 +1062,7 @@ body::after {
 
 /* Gantt mode */
 .gantt-mode .sidebar-right { display:none; }
-.gantt-mode .workspace { grid-template-columns: var(--sidebar-w) 1fr; }
+.gantt-mode .workspace { grid-template-columns: var(--sidebar-w) 1fr !important; }
 
 
 /* ══════════════════════════════════
@@ -1126,12 +1127,258 @@ body::after {
 .export-btn { display:none; }
 .nav-tabs { display:none; }
 .check-circle { width:20px; height:20px; border-radius:50%; background:var(--green-dim); color:var(--green); font-family:'JetBrains Mono',monospace; font-size:10px; font-weight:500; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:10px; }
+
+/* ══════════════════════════════════
+   BURGER MENU — Left Sidebar Toggle
+══════════════════════════════════ */
+.burger-btn {
+  display: flex; align-items: center; justify-content: center;
+  width: 36px; height: 36px; border-radius: var(--r-sm);
+  background: rgba(99,102,241,0.12);
+  border: 1px solid rgba(99,102,241,0.28);
+  cursor: pointer; flex-shrink: 0;
+  transition: all 0.18s ease;
+  color: var(--accent-lt);
+  box-shadow: 0 0 10px rgba(99,102,241,0.12);
+}
+.burger-btn:hover {
+  background: rgba(99,102,241,0.22);
+  color: #fff;
+  border-color: rgba(99,102,241,0.5);
+  box-shadow: 0 0 16px rgba(99,102,241,0.28);
+}
+/* The icon lines never morph — always hamburger */
+.burger-btn svg { display: block; }
+
+/* Visual divider between burger and logo */
+.nav-divider {
+  width: 1px; height: 22px;
+  background: linear-gradient(180deg, transparent, rgba(255,255,255,0.15), transparent);
+  flex-shrink: 0;
+  margin: 0 4px;
+}
+
+/* Left sidebar slide */
+.sidebar-left {
+  transition: width 0.3s cubic-bezier(0.4,0,0.2,1),
+              opacity 0.25s ease,
+              transform 0.3s cubic-bezier(0.4,0,0.2,1);
+  transform-origin: left center;
+}
+.sidebar-left.collapsed {
+  width: 0 !important;
+  opacity: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+/* Workspace grid adapts via JS inline style */
+
+/* ══════════════════════════════════
+   RIGHT SIDEBAR COLLAPSE TOGGLE
+══════════════════════════════════ */
+
+/* The toggle tab lives OUTSIDE sidebar-right, fixed to the viewport right edge */
+.right-toggle-tab {
+  position: fixed;
+  top: 50%;
+  right: 0;
+  transform: translateY(-50%);
+  z-index: 400;
+  width: 22px;
+  height: 56px;
+  background: linear-gradient(180deg, rgba(99,102,241,0.25) 0%, rgba(99,102,241,0.15) 100%);
+  border: 1px solid rgba(99,102,241,0.4);
+  border-right: none;
+  border-radius: 8px 0 0 8px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  color: var(--accent-lt);
+  box-shadow: -3px 0 16px rgba(99,102,241,0.2);
+  transition: right 0.3s cubic-bezier(0.4,0,0.2,1), background 0.18s ease,
+              box-shadow 0.18s ease, width 0.18s ease;
+}
+.right-toggle-tab:hover {
+  background: linear-gradient(180deg, rgba(99,102,241,0.45) 0%, rgba(99,102,241,0.3) 100%);
+  color: #fff;
+  box-shadow: -4px 0 24px rgba(99,102,241,0.4);
+  width: 26px;
+}
+.right-toggle-tab svg {
+  flex-shrink: 0;
+  transition: transform 0.28s cubic-bezier(0.4,0,0.2,1);
+}
+/* When panel is open, shift tab left by sidebar width */
+.right-toggle-tab.panel-open {
+  right: var(--sidebar-w);
+}
+/* When panel is closed, tab pins to right:0 — always visible, highlighted */
+.right-toggle-tab.panel-closed {
+  right: 0;
+  background: linear-gradient(180deg, rgba(99,102,241,0.4) 0%, rgba(99,102,241,0.28) 100%);
+  border-color: rgba(99,102,241,0.6);
+  box-shadow: -4px 0 20px rgba(99,102,241,0.4), 0 0 0 1px rgba(99,102,241,0.15);
+  color: #fff;
+}
+
+.sidebar-right {
+  position: relative;
+  overflow: hidden;
+  transition: width 0.3s cubic-bezier(0.4,0,0.2,1),
+              opacity 0.25s ease;
+}
+.sidebar-right.collapsed {
+  width: 0 !important;
+  opacity: 0;
+  pointer-events: none;
+  border: none;
+}
+
+/* ══════════════════════════════════
+   INPUT VISIBILITY FIXES (Dark Theme)
+══════════════════════════════════ */
+
+/* Field labels — brighter, more readable */
+.field-label {
+  color: #c4b5fd !important;
+  font-size: 10px !important;
+  letter-spacing: 0.14em !important;
+  opacity: 1 !important;
+}
+.field-label .req { color: var(--rose) !important; }
+
+/* Meta field labels */
+.meta-field label {
+  color: #c4b5fd !important;
+  font-size: 10px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.14em !important;
+}
+
+/* Input & textarea — visible background and border */
+.field-input, .field-textarea {
+  background: rgba(28, 32, 48, 0.95) !important;
+  border: 1px solid rgba(255,255,255,0.18) !important;
+  color: #f0f2fa !important;
+  border-radius: var(--r-sm) !important;
+}
+.field-input:focus, .field-textarea:focus {
+  background: rgba(34, 40, 64, 0.98) !important;
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 3px rgba(99,102,241,0.15) !important;
+  color: #ffffff !important;
+}
+.field-input::placeholder, .field-textarea::placeholder {
+  color: rgba(155,163,196,0.6) !important;
+}
+
+/* Meta inputs (Author, Epic, Sprint) */
+.meta-field input, .meta-field select {
+  background: rgba(28, 32, 48, 0.8) !important;
+  border: none !important;
+  border-bottom: 1px solid rgba(255,255,255,0.2) !important;
+  color: #f0f2fa !important;
+  padding: 5px 6px !important;
+  border-radius: var(--r-xs) var(--r-xs) 0 0 !important;
+}
+.meta-field input:focus, .meta-field select:focus {
+  border-bottom-color: var(--accent) !important;
+  background: rgba(34, 40, 64, 0.9) !important;
+}
+.meta-field input::placeholder {
+  color: rgba(155,163,196,0.5) !important;
+}
+
+/* Doc title input */
+.doc-title-input {
+  color: #f0f2fa !important;
+}
+.doc-title-input::placeholder {
+  color: rgba(155,163,196,0.45) !important;
+}
+
+/* Form section cards — more visible */
+.form-section {
+  background: rgba(22, 26, 36, 0.95) !important;
+  border: 1px solid rgba(255,255,255,0.1) !important;
+}
+.form-section:focus-within {
+  border-color: rgba(99,102,241,0.45) !important;
+  box-shadow: 0 0 0 3px rgba(99,102,241,0.08) !important;
+}
+
+/* Section head title — brighter */
+.section-head-title {
+  color: #f0f2fa !important;
+}
+.section-head-desc {
+  color: var(--text-secondary) !important;
+}
+
+/* Story row inputs */
+.story-row {
+  background: rgba(28, 32, 48, 0.95) !important;
+  border: 1px solid rgba(255,255,255,0.14) !important;
+}
+.story-row input {
+  color: #f0f2fa !important;
+}
+.story-row input::placeholder {
+  color: rgba(155,163,196,0.5) !important;
+}
+.story-connector {
+  color: rgba(155,163,196,0.7) !important;
+  background: rgba(255,255,255,0.04) !important;
+  border-left-color: rgba(255,255,255,0.1) !important;
+  border-right-color: rgba(255,255,255,0.1) !important;
+}
+
+/* Sprint table inputs */
+.sprint-table td input, .sprint-table td select {
+  color: #f0f2fa !important;
+}
+.sprint-table td input::placeholder {
+  color: rgba(155,163,196,0.5) !important;
+}
+
+/* Roadmap item inputs */
+.roadmap-item {
+  background: rgba(28, 32, 48, 0.95) !important;
+  border: 1px solid rgba(255,255,255,0.12) !important;
+}
+.roadmap-item-input {
+  color: #f0f2fa !important;
+}
+.roadmap-item-input::placeholder {
+  color: rgba(155,163,196,0.5) !important;
+}
+.roadmap-quarter-label {
+  color: var(--accent-lt) !important;
+  font-weight: 600 !important;
+}
+
+/* Gantt editor inputs */
+.gantt-editor-row input, .gantt-editor-row select {
+  color: #f0f2fa !important;
+  background: rgba(28,32,48,0.9) !important;
+  border-color: rgba(255,255,255,0.16) !important;
+}
+.gantt-editor-row input::placeholder {
+  color: rgba(155,163,196,0.5) !important;
+}
 </style>
 </head>
 <body>
 
 <!-- NAV -->
 <nav class="nav">
+  <!-- Burger toggle for left sidebar -->
+  <button class="burger-btn" id="burgerBtn" onclick="toggleLeftSidebar()" title="Toggle sidebar">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+      <path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+    </svg>
+  </button>
+  <!-- Visual separator -->
+  <div class="nav-divider"></div>
   <div class="nav-logo">
     <div class="nav-logo-icon">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M9 12h6M9 8h6M9 16h4M5 3h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -1281,7 +1528,7 @@ body::after {
   </main>
 
   <!-- RIGHT PREVIEW -->
-  <aside class="sidebar-right">
+  <aside class="sidebar-right" id="sidebarRight">
 
     <!-- PREVIEW HEADER — bold, vivid, prominent -->
     <div class="preview-header">
@@ -1335,6 +1582,13 @@ body::after {
   <!-- EXPORT MODAL (injected by JS) -->
 
 </div>
+
+<!-- RIGHT PANEL TOGGLE TAB — fixed, always visible -->
+<button class="right-toggle-tab panel-open" id="rightToggleTab" onclick="toggleRightSidebar()" title="Toggle preview panel">
+  <svg id="rightToggleIcon" width="13" height="13" viewBox="0 0 24 24" fill="none">
+    <path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>
+</button>
 
 <div class="toast" id="toast"></div>
 
@@ -3189,6 +3443,52 @@ function showToast(msg) {
 function toggleSideSection(btn) {
   const section = btn.closest('.sl-section');
   section.classList.toggle('collapsed');
+}
+
+// ─── LEFT SIDEBAR BURGER TOGGLE ───────────────────────────────
+let leftOpen = true;
+function toggleLeftSidebar() {
+  const sidebar = document.querySelector('.sidebar-left');
+  const workspace = document.querySelector('.workspace');
+  leftOpen = !leftOpen;
+
+  sidebar.classList.toggle('collapsed', !leftOpen);
+  updateWorkspaceGrid(workspace);
+  // Burger icon NEVER changes — always 3 lines
+}
+
+// ─── RIGHT SIDEBAR TOGGLE ─────────────────────────────────────
+let rightOpen = true;
+function toggleRightSidebar() {
+  const sidebar = document.getElementById('sidebarRight');
+  const workspace = document.querySelector('.workspace');
+  const tab = document.getElementById('rightToggleTab');
+  const icon = document.getElementById('rightToggleIcon');
+  rightOpen = !rightOpen;
+
+  sidebar.classList.toggle('collapsed', !rightOpen);
+  updateWorkspaceGrid(workspace);
+
+  // Tab always stays visible — just moves to right:0 when closed
+  if (rightOpen) {
+    // Panel is now open: position tab at left edge of sidebar
+    tab.classList.remove('panel-closed');
+    tab.classList.add('panel-open');
+    // Arrow points right (→) to indicate "click to close/collapse"
+    icon.innerHTML = `<path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>`;
+  } else {
+    // Panel is now closed: tab pins to viewport right edge
+    tab.classList.remove('panel-open');
+    tab.classList.add('panel-closed');
+    // Arrow points left (←) to indicate "click to open/expand"
+    icon.innerHTML = `<path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>`;
+  }
+}
+
+function updateWorkspaceGrid(workspace) {
+  const sw = leftOpen ? 'var(--sidebar-w)' : '0px';
+  const rw = rightOpen ? 'var(--sidebar-w)' : '0px';
+  workspace.style.gridTemplateColumns = `${sw} 1fr ${rw}`;
 }
 
 // ─── INIT ─────────────────────────────────────────────────────
