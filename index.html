@@ -215,16 +215,27 @@ body::after {
 .sidebar-left {
   background: linear-gradient(180deg, #0e1118 0%, #0a0c12 100%);
   border-right: 1px solid rgba(99,102,241,0.15);
-  overflow-y: auto; overflow-x: hidden;
-  padding: 0 0 80px;
-  display: flex; flex-direction: column;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 0 0 120px; /* Extra bottom padding for small screens */
+  display: flex;
+  flex-direction: column;
+  height: 100%; /* Ensure it fills the workspace height */
 }
-.sidebar-left::-webkit-scrollbar { width: 3px; }
-.sidebar-left::-webkit-scrollbar-thumb { background: rgba(99,102,241,0.3); border-radius: 2px; }
+.sidebar-left::-webkit-scrollbar { width: 4px; }
+.sidebar-left::-webkit-scrollbar-track { background: transparent; }
+.sidebar-left::-webkit-scrollbar-thumb {
+  background: rgba(99,102,241,0.4);
+  border-radius: 2px;
+}
+.sidebar-left::-webkit-scrollbar-thumb:hover {
+  background: rgba(99,102,241,0.6);
+}
 
 /* Top accent bar — real element, not pseudo */
 .sl-top-bar {
-  height: 3px; flex-shrink: 0;
+  height: 3px;
+  flex-shrink: 0;
   background: linear-gradient(90deg, var(--accent) 0%, #a78bfa 50%, var(--teal) 100%);
   box-shadow: 0 2px 16px rgba(99,102,241,0.4);
 }
@@ -233,6 +244,7 @@ body::after {
 .sl-section {
   border-bottom: 1px solid rgba(255,255,255,0.05);
   overflow: hidden;
+  flex-shrink: 0; /* CRITICAL: prevent sections from compressing */
 }
 .sl-section:last-child { border-bottom: none; }
 
@@ -1236,6 +1248,7 @@ body::after {
 /* ══════════════════════════════════════════════════════════════
    BODY VISIBILITY SYSTEM — Dark Theme Typography & Input Design
    Hierarchy: Section Labels > Field Labels > Meta Labels > Hints
+   Design Goal: Crystal-clear input affordances + visual hierarchy
 ══════════════════════════════════════════════════════════════ */
 
 /* ── 1. DOC TYPE TAG (top pill: "📝 USER STORY") ── */
@@ -1254,281 +1267,68 @@ body::after {
 .doc-title-input {
   color: #f4f6ff !important;
   font-size: 32px !important;
+  padding: 8px 0 !important;
+  transition: all 0.2s !important;
 }
 .doc-title-input::placeholder {
-  color: rgba(148,155,196,0.5) !important;
+  color: rgba(148,155,196,0.45) !important;
+}
+.doc-title-input:hover {
+  color: #ffffff !important;
+}
+.doc-title-input:focus {
+  color: #ffffff !important;
+  text-shadow: 0 0 20px rgba(99,102,241,0.15) !important;
 }
 
 /* ── 3. META ROW LABELS (Author / Epic / Sprint / Status) ── */
+.meta-field {
+  position: relative !important;
+}
 .meta-field label {
   font-family: 'Manrope', sans-serif !important;
   font-size: 10.5px !important;
   font-weight: 700 !important;
   letter-spacing: 0.1em !important;
   text-transform: uppercase !important;
-  color: #94a3d8 !important;          /* slate-blue — readable but not loud */
+  color: #a5b4fc !important;
+  margin-bottom: 4px !important;
+  display: block !important;
 }
 
-/* Meta inputs — underline style, clearly readable */
+/* Meta inputs — underline style with glow on focus */
 .meta-field input,
 .meta-field select {
   font-family: 'Inter', sans-serif !important;
   font-size: 13.5px !important;
   font-weight: 500 !important;
-  color: #e8ecff !important;
-  background: transparent !important;
+  color: #edf0ff !important;
+  background: linear-gradient(180deg, transparent 0%, rgba(99,102,241,0.03) 100%) !important;
   border: none !important;
-  border-bottom: 1.5px solid rgba(148,163,184,0.3) !important;
-  padding: 5px 2px !important;
-  min-width: 120px !important;
-  border-radius: 0 !important;
-  transition: border-color 0.18s !important;
+  border-bottom: 2px solid rgba(99,102,241,0.25) !important;
+  padding: 6px 4px !important;
+  min-width: 130px !important;
+  border-radius: 3px 3px 0 0 !important;
+  transition: all 0.2s !important;
+}
+.meta-field input:hover,
+.meta-field select:hover {
+  background: linear-gradient(180deg, transparent 0%, rgba(99,102,241,0.06) 100%) !important;
+  border-bottom-color: rgba(99,102,241,0.4) !important;
 }
 .meta-field input:focus,
 .meta-field select:focus {
   border-bottom-color: #818cf8 !important;
+  background: linear-gradient(180deg, transparent 0%, rgba(99,102,241,0.08) 100%) !important;
   outline: none !important;
+  box-shadow: 0 1px 0 0 #818cf8, 0 3px 8px rgba(99,102,241,0.15) !important;
+  color: #ffffff !important;
 }
 .meta-field input::placeholder {
-  color: rgba(148,163,184,0.45) !important;
+  color: rgba(148,163,184,0.4) !important;
   font-style: italic !important;
 }
 .meta-field select option { background: #1c2030; color: #e8ecff; }
-
-/* ── 4. FORM SECTION CARDS ── */
-.form-section {
-  background: #13172080 !important;
-  border: 1px solid rgba(255,255,255,0.09) !important;
-  backdrop-filter: blur(4px) !important;
-}
-.form-section:focus-within {
-  border-color: rgba(99,102,241,0.4) !important;
-  box-shadow: 0 0 0 3px rgba(99,102,241,0.07), 0 4px 24px rgba(0,0,0,0.3) !important;
-}
-
-/* ── 5. SECTION ACCORDION HEADER ── */
-.section-head-title {
-  font-family: 'Manrope', sans-serif !important;
-  font-size: 14px !important;
-  font-weight: 800 !important;
-  color: #dde4ff !important;
-  letter-spacing: -0.01em !important;
-}
-.section-head-desc {
-  font-family: 'Inter', sans-serif !important;
-  font-size: 11.5px !important;
-  font-weight: 400 !important;
-  color: #7a849e !important;
-  margin-top: 3px !important;
-}
-.section-required {
-  font-family: 'Manrope', sans-serif !important;
-  font-size: 9.5px !important;
-  font-weight: 700 !important;
-  letter-spacing: 0.06em !important;
-  color: #fbbf24 !important;
-  background: rgba(251,191,36,0.1) !important;
-  border-color: rgba(251,191,36,0.25) !important;
-}
-.section-optional {
-  font-family: 'Manrope', sans-serif !important;
-  font-size: 9.5px !important;
-  font-weight: 600 !important;
-  letter-spacing: 0.04em !important;
-  color: #525a7a !important;
-}
-
-/* ── 6. FIELD LABELS (Problem Statement, Success Metric…) ── */
-.field-label {
-  font-family: 'Manrope', sans-serif !important;
-  font-size: 11px !important;
-  font-weight: 700 !important;
-  letter-spacing: 0.06em !important;
-  text-transform: uppercase !important;
-  color: #a5b4fc !important;          /* soft indigo — clearly a label */
-  display: flex !important;
-  align-items: center !important;
-  gap: 6px !important;
-  margin-bottom: 2px !important;
-}
-.field-label .req {
-  color: #fb7185 !important;
-  font-size: 13px !important;
-  font-weight: 800 !important;
-  line-height: 1 !important;
-}
-
-/* ── 7. FIELD INPUTS & TEXTAREAS ── */
-.field-input,
-.field-textarea {
-  font-family: 'Inter', sans-serif !important;
-  font-size: 14px !important;
-  font-weight: 400 !important;
-  color: #edf0ff !important;
-  background: rgba(20, 24, 38, 0.85) !important;
-  border: 1.5px solid rgba(255,255,255,0.12) !important;
-  border-radius: 8px !important;
-  padding: 11px 14px !important;
-  line-height: 1.6 !important;
-  transition: border-color 0.18s, box-shadow 0.18s, background 0.18s !important;
-  outline: none !important;
-  width: 100% !important;
-}
-.field-input:hover,
-.field-textarea:hover {
-  border-color: rgba(255,255,255,0.2) !important;
-}
-.field-input:focus,
-.field-textarea:focus {
-  background: rgba(26, 30, 52, 0.95) !important;
-  border-color: #6366f1 !important;
-  box-shadow: 0 0 0 3px rgba(99,102,241,0.14),
-              inset 0 1px 0 rgba(255,255,255,0.04) !important;
-  color: #ffffff !important;
-}
-.field-input::placeholder,
-.field-textarea::placeholder {
-  font-style: italic !important;
-  color: rgba(130,140,180,0.55) !important;
-  font-size: 13px !important;
-}
-.field-textarea { resize: vertical; min-height: 92px; }
-
-/* ── 8. FIELD HINTS ── */
-.field-hint {
-  font-family: 'Inter', sans-serif !important;
-  font-size: 11.5px !important;
-  font-style: normal !important;
-  font-weight: 400 !important;
-  color: #5a6480 !important;
-  line-height: 1.6 !important;
-  display: flex !important;
-  align-items: flex-start !important;
-  gap: 5px !important;
-  padding: 2px 0 !important;
-}
-.field-hint::before {
-  content: '💡';
-  font-size: 10px;
-  margin-top: 1px;
-  flex-shrink: 0;
-}
-
-/* ── 9. STORY ROWS (As a / I want / So that) ── */
-.story-row {
-  background: rgba(20, 24, 38, 0.85) !important;
-  border: 1.5px solid rgba(255,255,255,0.1) !important;
-  border-radius: 8px !important;
-}
-.story-row:focus-within {
-  border-color: #6366f1 !important;
-  box-shadow: 0 0 0 2px rgba(99,102,241,0.12) !important;
-}
-.story-row input {
-  font-family: 'Inter', sans-serif !important;
-  font-size: 13.5px !important;
-  font-weight: 400 !important;
-  color: #edf0ff !important;
-}
-.story-row input::placeholder {
-  color: rgba(130,140,180,0.5) !important;
-  font-style: italic !important;
-}
-.story-connector {
-  font-family: 'Manrope', sans-serif !important;
-  font-size: 9.5px !important;
-  font-weight: 700 !important;
-  letter-spacing: 0.12em !important;
-  text-transform: uppercase !important;
-  color: #6366f1 !important;
-  background: rgba(99,102,241,0.08) !important;
-  border-left: 1px solid rgba(99,102,241,0.2) !important;
-  border-right: 1px solid rgba(99,102,241,0.2) !important;
-  padding: 0 12px !important;
-  white-space: nowrap !important;
-  height: 100% !important;
-  display: flex !important;
-  align-items: center !important;
-}
-
-/* ── 10. SPRINT TABLE ── */
-.sprint-table th {
-  font-family: 'Manrope', sans-serif !important;
-  font-size: 10px !important;
-  font-weight: 700 !important;
-  letter-spacing: 0.1em !important;
-  text-transform: uppercase !important;
-  color: #7c87b0 !important;
-  padding: 10px 12px !important;
-  border-bottom: 1px solid rgba(255,255,255,0.08) !important;
-}
-.sprint-table td {
-  padding: 10px 12px !important;
-  border-bottom: 1px solid rgba(255,255,255,0.05) !important;
-}
-.sprint-table td input,
-.sprint-table td select {
-  font-family: 'Inter', sans-serif !important;
-  font-size: 13.5px !important;
-  font-weight: 400 !important;
-  color: #edf0ff !important;
-  background: transparent !important;
-}
-.sprint-table td input::placeholder {
-  color: rgba(130,140,180,0.5) !important;
-  font-style: italic !important;
-}
-.sprint-table td select option { background: #1c2030; color: #edf0ff; }
-.sprint-table tr:hover td {
-  background: rgba(99,102,241,0.04) !important;
-}
-
-/* ── 11. ROADMAP ITEMS ── */
-.roadmap-item {
-  background: rgba(20, 24, 38, 0.75) !important;
-  border: 1.5px solid rgba(255,255,255,0.09) !important;
-}
-.roadmap-item:focus-within {
-  border-color: rgba(99,102,241,0.4) !important;
-}
-.roadmap-quarter-label {
-  font-family: 'Manrope', sans-serif !important;
-  font-size: 10px !important;
-  font-weight: 800 !important;
-  letter-spacing: 0.14em !important;
-  text-transform: uppercase !important;
-  color: #818cf8 !important;
-}
-.roadmap-item-input {
-  font-family: 'Inter', sans-serif !important;
-  font-size: 13.5px !important;
-  color: #edf0ff !important;
-}
-.roadmap-item-input::placeholder {
-  color: rgba(130,140,180,0.5) !important;
-  font-style: italic !important;
-}
-
-/* ── 12. GANTT EDITOR ── */
-.gantt-editor-row input,
-.gantt-editor-row select {
-  font-family: 'Inter', sans-serif !important;
-  font-size: 13px !important;
-  font-weight: 400 !important;
-  color: #edf0ff !important;
-  background: rgba(20, 24, 38, 0.85) !important;
-  border: 1.5px solid rgba(255,255,255,0.13) !important;
-  border-radius: 6px !important;
-}
-.gantt-editor-row input:focus,
-.gantt-editor-row select:focus {
-  border-color: #6366f1 !important;
-  background: rgba(26, 30, 52, 0.95) !important;
-  outline: none !important;
-}
-.gantt-editor-row input::placeholder {
-  color: rgba(130,140,180,0.5) !important;
-  font-style: italic !important;
 }
 .gantt-editor-row select option { background: #1c2030; color: #edf0ff; }
 
@@ -1557,6 +1357,136 @@ body::after {
   border-top-color: rgba(255,255,255,0.08) !important;
   padding-top: 18px !important;
   margin-top: 18px !important;
+}
+
+/* ════════════════════════════════════════════════════════════════════
+   ENHANCED INPUT INTUITIVENESS — Visual Affordance System
+   Makes it crystal clear where users need to input data
+════════════════════════════════════════════════════════════════════ */
+
+/* Empty input visual cue — dashed border when not filled */
+.field-input:not(:focus):placeholder-shown,
+.field-textarea:not(:focus):placeholder-shown {
+  border-style: dashed !important;
+  border-color: rgba(99,102,241,0.18) !important;
+  background: linear-gradient(135deg, rgba(20,24,38,0.6) 0%, rgba(16,20,34,0.7) 100%) !important;
+}
+
+/* Field label visual indicator */
+.field-label::before {
+  content: '▸' !important;
+  color: rgba(99,102,241,0.4) !important;
+  font-size: 11px !important;
+  transition: color 0.2s !important;
+  margin-right: -2px !important;
+}
+.field-group:focus-within .field-label::before {
+  color: #818cf8 !important;
+}
+
+/* Section header active indicator */
+.section-head {
+  position: relative !important;
+}
+.section-head::before {
+  content: '' !important;
+  position: absolute !important;
+  left: 0 !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  width: 3px !important;
+  height: 0 !important;
+  background: linear-gradient(180deg, var(--accent), var(--teal)) !important;
+  border-radius: 0 2px 2px 0 !important;
+  transition: height 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  opacity: 0 !important;
+}
+.section-head:hover::before {
+  height: 50% !important;
+  opacity: 0.5 !important;
+}
+.section-head.open::before {
+  height: 70% !important;
+  opacity: 1 !important;
+}
+
+/* Add subtle glow to focused inputs */
+.field-input:focus,
+.field-textarea:focus {
+  box-shadow: 0 0 0 3px rgba(99,102,241,0.18),
+              inset 0 1px 3px rgba(0,0,0,0.1),
+              0 4px 20px rgba(99,102,241,0.15) !important;
+}
+
+/* Story row hover state for better affordance */
+.story-row:hover {
+  border-color: rgba(99,102,241,0.28) !important;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.08), 0 0 0 1px rgba(99,102,241,0.1) !important;
+}
+
+/* Make meta inputs more inviting */
+.meta-field input:hover,
+.meta-field select:hover {
+  background: linear-gradient(180deg, transparent 0%, rgba(99,102,241,0.07) 100%) !important;
+}
+
+/* Enhanced button affordance */
+.add-row-btn {
+  position: relative !important;
+  overflow: hidden !important;
+}
+.add-row-btn::before {
+  content: '' !important;
+  position: absolute !important;
+  inset: 0 !important;
+  background: radial-gradient(circle at center, rgba(99,102,241,0.15), transparent 70%) !important;
+  opacity: 0 !important;
+  transition: opacity 0.3s !important;
+}
+.add-row-btn:hover::before {
+  opacity: 1 !important;
+}
+
+/* Form section glow on active input */
+.form-section:focus-within {
+  box-shadow: 0 0 0 3px rgba(99,102,241,0.12),
+              0 6px 30px rgba(99,102,241,0.2),
+              inset 0 1px 0 rgba(255,255,255,0.06) !important;
+  background: linear-gradient(135deg, #13172090 0%, #0f131ca0 100%) !important;
+}
+
+/* Sprint table cell focus highlight */
+.sprint-table td:focus-within {
+  background: rgba(99,102,241,0.08) !important;
+  position: relative !important;
+}
+.sprint-table td:focus-within::before {
+  content: '' !important;
+  position: absolute !important;
+  left: 0 !important;
+  top: 0 !important;
+  bottom: 0 !important;
+  width: 2px !important;
+  background: var(--accent) !important;
+}
+
+/* Roadmap item hover glow */
+.roadmap-item:hover {
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.1), 0 0 0 1px rgba(99,102,241,0.15) !important;
+}
+
+/* Gantt inputs enhanced hover */
+.gantt-editor-row input:not(:focus):hover,
+.gantt-editor-row select:not(:focus):hover {
+  box-shadow: 0 0 0 1px rgba(99,102,241,0.2) !important;
+}
+
+/* Acceptance criteria numbering glow on focus */
+.acceptance-row:focus-within .ac-num {
+  background: rgba(99,102,241,0.25) !important;
+  border-color: rgba(99,102,241,0.4) !important;
+  box-shadow: 0 0 0 2px rgba(99,102,241,0.1) !important;
+  color: #c4b5fd !important;
 }
 </style>
 </head>
